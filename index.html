@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lara - Joyería Elegante</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 100px 0;
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .product-image {
+            height: 250px;
+            object-fit: cover;
+            background: #f8f9fa;
+        }
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
+        }
+        .price-tag {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .material-badge {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .section-title {
+            position: relative;
+            margin-bottom: 50px;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+        
+        /* Estilos mejorados para los botones de navegación del carrusel */
+        .carousel-nav-btn {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 3px solid #007bff !important;
+            color: #007bff !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        .carousel-nav-btn:hover {
+            background: #007bff !important;
+            color: white !important;
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4) !important;
+        }
+        
+        /* Colores específicos para cada categoría */
+        .carousel-nav-btn.anillos {
+            border-color: #007bff !important;
+            color: #007bff !important;
+        }
+        .carousel-nav-btn.anillos:hover {
+            background: #007bff !important;
+            color: white !important;
+        }
+        
+        .carousel-nav-btn.pulseras {
+            border-color: #28a745 !important;
+            color: #28a745 !important;
+        }
+        .carousel-nav-btn.pulseras:hover {
+            background: #28a745 !important;
+            color: white !important;
+        }
+        
+        .carousel-nav-btn.cadenas {
+            border-color: #ffc107 !important;
+            color: #ffc107 !important;
+        }
+        .carousel-nav-btn.cadenas:hover {
+            background: #ffc107 !important;
+            color: #212529 !important;
+        }
+        
+        .carousel-nav-btn.aretes {
+            border-color: #17a2b8 !important;
+            color: #17a2b8 !important;
+        }
+        .carousel-nav-btn.aretes:hover {
+            background: #17a2b8 !important;
+            color: white !important;
+        }
+
+        /* Modo oscuro automático */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a !important;
+                color: #ffffff !important;
+            }
+            
+            .hero-section {
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+            }
+            
+            .product-card {
+                background-color: #2d2d2d !important;
+                border: 1px solid #404040 !important;
+            }
+            
+            .product-card:hover {
+                box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1) !important;
+            }
+            
+            .card-body {
+                background-color: #2d2d2d !important;
+                color: #ffffff !important;
+            }
+            
+            .card-title {
+                color: #ffffff !important;
+            }
+            
+            .navbar {
+                background-color: #2d2d2d !important;
+            }
+            
+            .navbar-dark {
+                background-color: #2d2d2d !important;
+            }
+            
+            .navbar-brand {
+                color: #ffffff !important;
+            }
+            
+            .nav-link {
+                color: #ffffff !important;
+            }
+            
+            .nav-link:hover {
+                color: #007bff !important;
+            }
+            
+            .btn-outline-primary {
+                color: #007bff !important;
+                border-color: #007bff !important;
+            }
+            
+            .btn-outline-primary:hover {
+                background-color: #007bff !important;
+                color: #ffffff !important;
+            }
+            
+            .btn-outline-success {
+                color: #28a745 !important;
+                border-color: #28a745 !important;
+            }
+            
+            .btn-outline-success:hover {
+                background-color: #28a745 !important;
+                color: #ffffff !important;
+            }
+            
+            .btn-outline-warning {
+                color: #ffc107 !important;
+                border-color: #ffc107 !important;
+            }
+            
+            .btn-outline-warning:hover {
+                background-color: #ffc107 !important;
+                color: #212529 !important;
+            }
+            
+            .btn-outline-info {
+                color: #17a2b8 !important;
+                border-color: #17a2b8 !important;
+            }
+            
+            .btn-outline-info:hover {
+                background-color: #17a2b8 !important;
+                color: #ffffff !important;
+            }
+            
+            .carousel-nav-btn {
+                background: rgba(45, 45, 45, 0.9) !important;
+            }
+            
+            .carousel-nav-btn.anillos {
+                background: rgba(45, 45, 45, 0.9) !important;
+            }
+            
+            .carousel-nav-btn.pulseras {
+                background: rgba(45, 45, 45, 0.9) !important;
+            }
+            
+            .carousel-nav-btn.cadenas {
+                background: rgba(45, 45, 45, 0.9) !important;
+            }
+            
+            .carousel-nav-btn.aretes {
+                background: rgba(45, 45, 45, 0.9) !important;
+            }
+            
+            footer {
+                background-color: #2d2d2d !important;
+                color: #ffffff !important;
+            }
+            
+            .section-title {
+                color: #ffffff !important;
+            }
+            
+            .section-title::after {
+                background: linear-gradient(45deg, #007bff, #17a2b8) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-gem me-2"></i>Lara Joyería
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#inicio">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#anillos">Anillos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pulseras">Pulseras</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#cadenas">Cadenas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#aretes">Aretes</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">Lara Joyería Elegante</h1>
+            <p class="lead mb-4">Descubre nuestra colección exclusiva de joyas en acero inoxidable y enchape en oro 18K</p>
+            <a href="#productos" class="btn btn-primary btn-lg">Ver Colección</a>
+        </div>
+    </section>
+
+    <!-- Productos Section -->
+    <section id="productos" class="py-5">
+        <div class="container">
+            <!-- Anillos -->
+            <div id="anillos" class="mb-5">
+                <h2 class="text-center section-title">Anillos</h2>
+                <div class="position-relative">
+                    <button class="btn carousel-nav-btn anillos position-absolute start-0 top-50 translate-middle-y" type="button" data-bs-target="#anillosCarousel" data-bs-slide="prev" style="z-index: 10; left: -60px;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn carousel-nav-btn anillos position-absolute end-0 top-50 translate-middle-y" type="button" data-bs-target="#anillosCarousel" data-bs-slide="next" style="z-index: 10; right: -60px;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div id="anillosCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_AceroInoxidable_250.png" class="card-img-top product-image" alt="Anillo Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 250</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_200.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 200</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_AceroInoxidableEnchapeEnOro_320.png" class="card-img-top product-image" alt="Anillo Acero Enchape Oro">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Acero Enchape Oro</h5>
+                                                <span class="material-badge mb-2">Acero Enchape Oro</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 320</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_250.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 250</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_240__.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 240</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_AceroInoxidableEnchapeEnOro_350.png" class="card-img-top product-image" alt="Anillo Acero Enchape Oro">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Acero Enchape Oro</h5>
+                                                <span class="material-badge mb-2">Acero Enchape Oro</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 350</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_240_.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 240</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_250_.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 250</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_230.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 230</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-primary">Anillos</span>
+                                            </div>
+                                            <img src="assets/categorias/Anillos/Anillos_EnchapeEnOro18K_240.png" class="card-img-top product-image" alt="Anillo Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Anillo Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 240</div>
+                                                    <button class="btn btn-outline-primary w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pulseras -->
+            <div id="pulseras" class="mb-5">
+                <h2 class="text-center section-title">Pulseras</h2>
+                <div class="position-relative">
+                    <button class="btn carousel-nav-btn pulseras position-absolute start-0 top-50 translate-middle-y" type="button" data-bs-target="#pulserasCarousel" data-bs-slide="prev" style="z-index: 10; left: -60px;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn carousel-nav-btn pulseras position-absolute end-0 top-50 translate-middle-y" type="button" data-bs-target="#pulserasCarousel" data-bs-slide="next" style="z-index: 10; right: -60px;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div id="pulserasCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_390.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 390</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_EnchapeEnOro18K_395.png" class="card-img-top product-image" alt="Pulsera Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 395</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_EnchapeEnOro18K_370.png" class="card-img-top product-image" alt="Pulsera Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 370</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_470.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 470</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_440_.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 440</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_450.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 450</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_440.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 440</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_EnchapeEnOro18K_415.png" class="card-img-top product-image" alt="Pulsera Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 415</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidableEnchapeEnOro18K_410.png" class="card-img-top product-image" alt="Pulsera Acero Enchape Oro">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Enchape Oro</h5>
+                                                <span class="material-badge mb-2">Acero Enchape Oro</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 410</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-success">Pulseras</span>
+                                            </div>
+                                            <img src="assets/categorias/Pulseras/Pulseras_AceroInoxidable_400.png" class="card-img-top product-image" alt="Pulsera Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Pulsera Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 400</div>
+                                                    <button class="btn btn-outline-success w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cadenas -->
+            <div id="cadenas" class="mb-5">
+                <h2 class="text-center section-title">Cadenas</h2>
+                <div class="position-relative">
+                    <button class="btn carousel-nav-btn cadenas position-absolute start-0 top-50 translate-middle-y" type="button" data-bs-target="#cadenasCarousel" data-bs-slide="prev" style="z-index: 10; left: -60px;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn carousel-nav-btn cadenas position-absolute end-0 top-50 translate-middle-y" type="button" data-bs-target="#cadenasCarousel" data-bs-slide="next" style="z-index: 10; right: -60px;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div id="cadenasCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_AceroInoxidable_150.png" class="card-img-top product-image" alt="Cadena Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 150</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_AceroInoxidable_395.png" class="card-img-top product-image" alt="Cadena Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 395</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_AceroInoxidable_350.png" class="card-img-top product-image" alt="Cadena Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 350</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_380.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 380</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_AceroInoxidable_380.png" class="card-img-top product-image" alt="Cadena Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 380</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_200.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 200</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_470.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 470</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_460.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 460</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_400.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 400</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-warning">Cadenas</span>
+                                            </div>
+                                            <img src="assets/categorias/Cadena/Cadena_EnchapeEnOro18K_450.png" class="card-img-top product-image" alt="Cadena Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Cadena Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 450</div>
+                                                    <button class="btn btn-outline-warning w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aretes -->
+            <div id="aretes" class="mb-5">
+                <h2 class="text-center section-title">Aretes</h2>
+                <div class="position-relative">
+                    <button class="btn carousel-nav-btn aretes position-absolute start-0 top-50 translate-middle-y" type="button" data-bs-target="#aretesCarousel" data-bs-slide="prev" style="z-index: 10; left: -60px;">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn carousel-nav-btn aretes position-absolute end-0 top-50 translate-middle-y" type="button" data-bs-target="#aretesCarousel" data-bs-slide="next" style="z-index: 10; right: -60px;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div id="aretesCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_AceroInoxidableEnchapeEnOro_350.png" class="card-img-top product-image" alt="Arete Acero Enchape Oro">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Acero Enchape Oro</h5>
+                                                <span class="material-badge mb-2">Acero Enchape Oro</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 350</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_420_.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 420</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_370.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 370</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_390_.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 390</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_AceroInoxidableEnchapeEnOro_395.png" class="card-img-top product-image" alt="Arete Acero Enchape Oro">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Acero Enchape Oro</h5>
+                                                <span class="material-badge mb-2">Acero Enchape Oro</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 395</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_420.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 420</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_400.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 400</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_390.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 390</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row g-4">
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_AceroInoxidable_395.png" class="card-img-top product-image" alt="Arete Acero Inoxidable">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Acero Inoxidable</h5>
+                                                <span class="material-badge mb-2">Acero Inoxidable</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 395</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card product-card h-100">
+                                            <div class="category-badge">
+                                                <span class="badge bg-info">Aretes</span>
+                                            </div>
+                                            <img src="assets/categorias/Aretes/Arete_EnchapeEnOro18K_230.png" class="card-img-top product-image" alt="Arete Enchape Oro 18K">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">Arete Enchape Oro 18K</h5>
+                                                <span class="material-badge mb-2">Enchape Oro 18K</span>
+                                                <div class="mt-auto">
+                                                    <div class="price-tag d-inline-block mb-2">L. 230</div>
+                                                    <button class="btn btn-outline-info w-100">Agregar al Carrito</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-gem me-2"></i>Lara Joyería</h5>
+                    <p>Tu destino para joyas elegantes y de calidad en Honduras.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h6>Contacto</h6>
+                    <p><i class="fas fa-phone me-2"></i>+504 1234-5678</p>
+                    <p><i class="fas fa-envelope me-2"></i>info@larajoyeria.com</p>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2024 Lara Joyería. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
