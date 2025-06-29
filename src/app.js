@@ -1,65 +1,33 @@
 const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
 const app = express();
-const db = require('./configuraciones/db');
+const { sequelize } = require('./configuracion/db');
+require('./modelos/Usuario');
+require('./modelos/Pedido');
+const usuariosRoutes = require('./rutas/usuarios');
 
-// Configuración de middleware
-app.use(morgan('dev'));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..'))); // Servir archivos estáticos desde la raíz del proyecto
-app.set('port', 3000);
+app.use('/api/usuarios', usuariosRoutes);
 
-// Configuración de vistas
-app.set('view engine', 'html');
-app.engine('html', require('ejs').renderFile);
+console.log('⏳ Conectando a la base de datos MySQL...');
 
-// Ruta principal - servir el HTML de Lara Joyería
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
-// Ruta para acceder directamente al HTML
-app.get('/lara', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
-// Ruta para verificar el estado del servidor
-app.get('/status', (req, res) => {
-    res.json({
-        status: 'OK',
-        message: 'Lara Joyería - Servidor funcionando correctamente',
-        timestamp: new Date().toISOString(),
-        port: app.get('port')
+// Sincroniza modelos con la base de datos (crea las tablas si no existen)
+sequelize.sync()
+  .then(() => {
+    console.log('✅ Base de datos conectada correctamente');
+    console.log('📦 Tablas sincronizadas:');
+    console.log('   - usuarios');
+    console.log('   - pedidos');
+    // Inicia el servidor en el puerto 3001
+    app.listen(3001, () => {
+      console.log('🚀 Servidor escuchando en http://localhost:3001');
+      console.log('👉 Endpoints disponibles:');
+      console.log('   POST   /api/usuarios/registro');
+      console.log('   GET    /api/usuarios');
+      console.log('   GET    /api/usuarios/:id');
+      console.log('   PUT    /api/usuarios/:id');
+      console.log('   DELETE /api/usuarios/:id');
     });
-});
-
-// Conexión a la base de datos (opcional para la página web)
-db.authenticate()
-    .then(() => {
-        console.log('✅ Base de datos conectada correctamente');
-        console.log('📊 Base de datos lista para futuras funcionalidades');
-    })
-    .catch((err) => {
-        console.error('❌ Error de conexión a la base de datos:', err);
-        console.log('⚠️  La página web funcionará sin base de datos');
-    });
-
-// Manejo de errores 404
-app.use((req, res) => {
-    res.status(404).json({
-        error: 'Página no encontrada',
-        message: 'La ruta solicitada no existe',
-        availableRoutes: ['/', '/lara', '/status']
-    });
-});
-
-// Iniciar servidor
-app.listen(app.get('port'), () => {
-    console.log('🚀 Servidor Lara Joyería iniciado correctamente');
-    console.log('📍 Puerto:', app.get('port'));
-    console.log('🌐 URL principal: http://localhost:' + app.get('port'));
-    console.log('🛍️  Tienda Lara: http://localhost:' + app.get('port') + '/lara');
-    console.log('📊 Estado del servidor: http://localhost:' + app.get('port') + '/status');
-    console.log('📁 Archivos estáticos servidos desde:', path.join(__dirname, '..'));
-}); 
+  })
+  .catch(err => {
+    console.error('❌ Error al sincronizar la base de datos:', err);
+  });
