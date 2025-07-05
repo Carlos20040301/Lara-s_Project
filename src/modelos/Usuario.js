@@ -24,8 +24,7 @@ const Usuario = sequelize.define(
       },
     },
 <<<<<<< HEAD
-    contraseña: {
-=======
+  
     password: {
 >>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
       type: DataTypes.STRING,
