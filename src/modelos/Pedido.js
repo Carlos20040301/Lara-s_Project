@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../configuracion/db');
 const Usuario = require('./Usuario');
@@ -35,6 +38,7 @@ const Pedido = sequelize.define(
 Usuario.hasMany(Pedido, { foreignKey: 'admin_id' });
 Pedido.belongsTo(Usuario, { foreignKey: 'admin_id' });
 
+<<<<<<< HEAD
 =======
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../configuracion/db');
@@ -73,4 +77,7 @@ Usuario.hasMany(Pedido, { foreignKey: 'admin_id' });
 Pedido.belongsTo(Usuario, { foreignKey: 'admin_id' });
 
 >>>>>>> ca053c240583f5d6c8272b463ebcb0a57060675b
+=======
+
+>>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 module.exports = Pedido;

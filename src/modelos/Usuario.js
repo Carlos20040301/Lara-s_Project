@@ -1,4 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../configuracion/db');
 
@@ -19,7 +23,11 @@ const Usuario = sequelize.define(
         isEmail: true,
       },
     },
+<<<<<<< HEAD
     contraseña: {
+=======
+    password: {
+>>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -48,6 +56,7 @@ const Usuario = sequelize.define(
   }
 );
 
+<<<<<<< HEAD
 =======
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../configuracion/db');
@@ -99,4 +108,6 @@ const Usuario = sequelize.define(
 );
 
 >>>>>>> ca053c240583f5d6c8272b463ebcb0a57060675b
+=======
+>>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 module.exports = Usuario;
