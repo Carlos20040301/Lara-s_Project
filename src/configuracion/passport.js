@@ -1,10 +1,11 @@
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const passport = require('passport');
-const Usuario = require('../modelos/Usuario'); // 
-const { clave } = process.env;
-const moment = require("moment");
-const expiracion = moment.duration(1, "hours").asSeconds();
+const jwt = require('jsonwebtoken');
+const Usuario = require('../modelos/Usuario');
 require('dotenv').config();
+
+const clave = process.env.clave || 'clave_secreta';
+const expiracion = 24 * 60 * 60; // 24 horas en segundos
 
 exports.getToken = (data) => {
   return jwt.sign(data, clave, { expiresIn: expiracion });
@@ -15,18 +16,18 @@ const opts = {
   secretOrKey: clave,
 };
 
-exports.validarAutenticacion =passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
-    await Usuario.findByPk(jwt_payload.id,(err, user)=> {
- if (err) {
-      return done(err, false);
-    }
+passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+  try {
+    const user = await Usuario.findByPk(jwt_payload.id);
     if (user) {
       return done(null, user);
     } else {
       return done(null, false);
-    }
-});
+    }
+  } catch (err) {
+    return done(err, false);
+  }
 }));
 
-module.exports = exports.validarAutenticacion;
+module.exports = passport;
 
