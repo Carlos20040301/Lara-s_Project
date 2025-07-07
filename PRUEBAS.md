@@ -150,30 +150,7 @@ GET http://localhost:3001/api/pedidos/estado/pendiente
 Authorization: Bearer <tu_token_jwt>
 ```
 
-### 6. Obtener Estadísticas
-
-```http
-GET http://localhost:3001/api/pedidos/estadisticas
-Authorization: Bearer <tu_token_jwt>
-```
-
-**Respuesta esperada:**
-```json
-{
-  "success": true,
-  "message": "Estadísticas obtenidas exitosamente",
-  "data": {
-    "totalPedidos": 1,
-    "pedidosPendientes": 0,
-    "pedidosPagados": 1,
-    "pedidosEnviados": 0,
-    "pedidosCancelados": 0,
-    "totalVentas": "450.00"
-  }
-}
-```
-
-### 7. Eliminar Pedido
+### 6. Eliminar Pedido
 
 ```http
 DELETE http://localhost:3001/api/pedidos/1

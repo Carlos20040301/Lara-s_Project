@@ -85,7 +85,6 @@ src/
 - `PUT /api/pedidos/:id` - Actualizar pedido
 - `DELETE /api/pedidos/:id` - Eliminar pedido
 - `GET /api/pedidos/estado/:estado` - Filtrar por estado
-- `GET /api/pedidos/estadisticas` - Estadísticas
 
 ## 🔧 Instalación y Configuración
 

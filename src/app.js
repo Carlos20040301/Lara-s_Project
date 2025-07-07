@@ -49,7 +49,6 @@ sequelize.sync()
       console.log('   PUT    /api/pedidos/:id');
       console.log('   DELETE /api/pedidos/:id');
       console.log('   GET    /api/pedidos/estado/:estado');
-      console.log('   GET    /api/pedidos/estadisticas');
     });
   })
   .catch(err => {

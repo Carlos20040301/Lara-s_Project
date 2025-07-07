@@ -60,11 +60,6 @@ router.get(
   pedidosController.obtenerPedidosPorEstado
 );
 
-// GET /api/pedidos/estadisticas - Obtener estadísticas de pedidos
-router.get(
-  '/estadisticas',
-  autenticacionJWT,
-  pedidosController.obtenerEstadisticas
-);
+
 
 module.exports = router; 

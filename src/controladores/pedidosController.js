@@ -283,49 +283,7 @@ const obtenerPedidosPorEstado = async (req, res) => {
   }
 };
 
-// Controlador para obtener estadísticas de pedidos
-const obtenerEstadisticas = async (req, res) => {
-  try {
-    const totalPedidos = await Pedido.count();
-    const pedidosPendientes = await Pedido.count({ where: { estado: 'pendiente' } });
-    const pedidosPagados = await Pedido.count({ where: { estado: 'pagado' } });
-    const pedidosEnviados = await Pedido.count({ where: { estado: 'enviado' } });
-    const pedidosCancelados = await Pedido.count({ where: { estado: 'cancelado' } });
 
-    // Calcular total de ventas (solo pedidos pagados y enviados)
-    const pedidosCompletados = await Pedido.findAll({
-      where: {
-        estado: ['pagado', 'enviado']
-      },
-      attributes: ['total']
-    });
-
-    const totalVentas = pedidosCompletados.reduce((sum, pedido) => {
-      return sum + parseFloat(pedido.total);
-    }, 0);
-
-    res.status(200).json({
-      success: true,
-      message: 'Estadísticas obtenidas exitosamente',
-      data: {
-        totalPedidos,
-        pedidosPendientes,
-        pedidosPagados,
-        pedidosEnviados,
-        pedidosCancelados,
-        totalVentas: totalVentas.toFixed(2)
-      }
-    });
-
-  } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor',
-      error: error.message
-    });
-  }
-};
 
 module.exports = {
   crearPedido,
@@ -333,6 +291,5 @@ module.exports = {
   obtenerPedidoPorId,
   actualizarPedido,
   eliminarPedido,
-  obtenerPedidosPorEstado,
-  obtenerEstadisticas
+  obtenerPedidosPorEstado
 }; 

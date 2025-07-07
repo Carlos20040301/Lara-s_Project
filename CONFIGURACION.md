@@ -88,7 +88,6 @@ Authorization: Bearer <token>
 - `PUT /api/pedidos/:id` - Actualizar pedido
 - `DELETE /api/pedidos/:id` - Eliminar pedido
 - `GET /api/pedidos/estado/:estado` - Filtrar por estado
-- `GET /api/pedidos/estadisticas` - Obtener estadísticas
 
 ### Estados de Pedido
 - `pendiente` - Pedido creado, pendiente de pago
