@@ -1,15 +1,9 @@
-
 const Usuario = require('../modelos/Usuario');
 const Pedido = require('../modelos/Pedido');
 const argon2 = require('argon2');
-
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
-const Usuario = require('../modelos/Usuario');
-const Pedido = require('../modelos/Pedido');
-const argon2 = require('argon2');
 const passport = require('../configuracion/passport'); // Ajusta la ruta si es necesario
-
 
 // Registrar nuevo usuario admin
 exports.registrar = async (req, res) => {
@@ -27,16 +21,12 @@ exports.registrar = async (req, res) => {
       return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres' });
     }
     const hash = await argon2.hash(password);
-
-    await Usuario.create({ email, contraseña: hash, nombre, rol: 'admin' });
-
     await Usuario.create({ email, password: hash, nombre, rol: 'admin' });
     res.status(201).json({ mensaje: 'Usuario registrado' });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error en el servidor' });
   }
 };
-
 
 // iniciar sesión
 exports.iniciarsesion = async (req, res) => {
@@ -62,8 +52,6 @@ exports.iniciarsesion = async (req, res) => {
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
 
-    
-
     // Generar el token JWT
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol }, // puedes incluir más datos si quieres
@@ -82,8 +70,6 @@ exports.iniciarsesion = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-
-
 
 // Listar todos los usuarios (sin contraseñas)
 exports.listar = async (req, res) => {
@@ -133,7 +119,6 @@ exports.actualizar = async (req, res) => {
       if (password.length < 6) {
         return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres' });
       }
-
       usuario.password = await argon2.hash(password);
     }
     await usuario.save();
@@ -157,9 +142,7 @@ exports.eliminar = async (req, res) => {
     }
     await usuario.destroy();
     res.json({ mensaje: 'Usuario eliminado' });
-    
   } catch (error) {
     res.status(500).json({ mensaje: 'Error en el servidor' });
   }
-
 };

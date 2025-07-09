@@ -1,45 +1,55 @@
-const express = require('express');
-const router = express.Router();
+const express   = require('express');
+const router    = express.Router();
+const { upload, procesarImagen } = require('../intermediarios/multer'); 
 const joyascontrolador = require('../controladores/joyascontrolador');
-const joya = require('../modelos/joya');
-const passport = require('passport');
+const passport  = require('passport');
 
-// Ruta para obtener todas las joyas
-router.get('/', joyascontrolador.listarJoyas);
-// Ruta para crear una nueva joya
-router.post('/', joyascontrolador.crearJoya);
-// Ruta para obtener una joya por ID
-router.get('/:id', joyascontrolador.obtenerJoyaPorId);
-// Ruta para actualizar una joya por ID
-router.put('/:id', joyascontrolador.actualizarJoya);
-// Ruta para eliminar una joya por ID
-router.delete('/:id', joyascontrolador.eliminarJoya);
-
-router.post(
-  '/',
-  passport.authenticate('jwt', { session: false }),
-  joyascontrolador.crearJoya
-);
-
+// Listar todas las joyas
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   joyascontrolador.listarJoyas
 );
+
+// Crear joya (con imagen opcional)
+router.post(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  upload.single('imagen'),
+  procesarImagen,
+  joyascontrolador.crearJoya
+);
+
+
+// Obtener joya por ID
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  joyascontrolador.obtenerJoyaPorId
+  joyascontrolador.obtenerJoyaPorId   
 );
+
+// Actualizar joya por ID
 router.put(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   joyascontrolador.actualizarJoya
 );
+
+// Actualizar solo la imagen de la joya
+router.put(
+  '/:id/imagen',
+  passport.authenticate('jwt', { session: false }),
+  upload.single('imagen'),
+  procesarImagen,
+  joyascontrolador.actualizarImagenJoya
+);
+
+// Eliminar joya por ID
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   joyascontrolador.eliminarJoya
 );
+
 
 module.exports = router;

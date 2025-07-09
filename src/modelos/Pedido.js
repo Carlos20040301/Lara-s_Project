@@ -1,12 +1,8 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../configuracion/db');
 const Usuario = require('./Usuario');
 
-// Modelo de Pedido relacionado con Usuario (admin)
+// Modelo de Pedido con todas las especificaciones requeridas
 const Pedido = sequelize.define(
   'Pedido',
   {
@@ -15,9 +11,35 @@ const Pedido = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    descripcion: {
-      type: DataTypes.STRING,
+    joya_id: {
+      type: DataTypes.STRING, // String porque las joyas usan MongoDB con IDs string
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    cantidad: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1, // Cantidad debe ser mayor a 0
+        isInt: true,
+      },
+    },
+    total: {
+      type: DataTypes.DECIMAL(10, 2), // Decimal con 2 decimales
+      allowNull: false,
+      validate: {
+        min: 0, // Total debe ser mayor o igual a 0
+      },
+    },
+    estado: {
+      type: DataTypes.ENUM('pendiente', 'pagado', 'enviado', 'cancelado'),
+      allowNull: false,
+      defaultValue: 'pendiente',
+      validate: {
+        isIn: [['pendiente', 'pagado', 'enviado', 'cancelado']],
+      },
     },
     admin_id: {
       type: DataTypes.INTEGER,
@@ -30,7 +52,7 @@ const Pedido = sequelize.define(
   },
   {
     tableName: 'pedidos',
-    timestamps: false,
+    timestamps: true, // Agregamos timestamps para auditoría
   }
 );
 
@@ -38,46 +60,4 @@ const Pedido = sequelize.define(
 Usuario.hasMany(Pedido, { foreignKey: 'admin_id' });
 Pedido.belongsTo(Usuario, { foreignKey: 'admin_id' });
 
-<<<<<<< HEAD
-=======
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../configuracion/db');
-const Usuario = require('./Usuario');
-
-// Modelo de Pedido relacionado con Usuario (admin)
-const Pedido = sequelize.define(
-  'Pedido',
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    descripcion: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    admin_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Usuario,
-        key: 'id',
-      },
-    },
-  },
-  {
-    tableName: 'pedidos',
-    timestamps: false,
-  }
-);
-
-// Relación 1:N (un usuario puede tener muchos pedidos)
-Usuario.hasMany(Pedido, { foreignKey: 'admin_id' });
-Pedido.belongsTo(Usuario, { foreignKey: 'admin_id' });
-
->>>>>>> ca053c240583f5d6c8272b463ebcb0a57060675b
-=======
-
->>>>>>> 830d806 (Parte de Fernanda, parte 1, editando también partes de los archivos ya subidos)
 module.exports = Pedido;

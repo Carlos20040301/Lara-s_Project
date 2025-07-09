@@ -1,70 +1,124 @@
+const mongoose  = require('mongoose');
 const joya = require('../modelos/joya');
-
+const Categoria = require('../modelos/categoria');
 // Controlador para manejar las operaciones relacionadas con las joyas
 //crear una nueva joya
 exports.crearJoya = async (req, res) => {
-    try {
-        const nuevaJoya = new joya(req.body);
-        await nuevaJoya.save();
-        res.status(201).json({msj: 'Joya creada exitosamente', joya: nuevaJoya});
-    } catch (error) {
-        console.error('Error al crear la joya:', error);
-        res.status(400).json({ msj: 'Error al crear la joya' });
-    }
+  try {
+    const { _id, nombre, categoria, precio, descripcion, stock } = req.body;
+
+    // Validar categoría
+    const categoriaEncontrada = await Categoria.findOne({ nombre: categoria });
+    if (!categoriaEncontrada)
+      return res.status(400).json({ msj: 'Categoría no encontrada' });
+
+    // Crear
+    const nueva = new joya({
+      _id, nombre,
+      categoria: categoriaEncontrada._id,
+      precio, descripcion, stock,
+      imagen: req.nombreImagen || 'default.jpg'
+    });
+
+    await nueva.save();
+    res.status(201).json({ msj: 'Joya creada correctamente', joya: nueva });
+  } catch (error) {
+    if (error.code === 11000)          // id duplicado
+      return res.status(400).json({ msj: 'ID ya existe' });
+    console.error('Error al crear joya:', error);
+    res.status(500).json({ msj: 'Error interno al crear joya' });
+  }
 };
 
-//listar todas las joyas
-exports.listarJoyas = async (req, res) => {
-    try {
-        const joyas = await joya.find();
-        res.status(200).json(joyas);
-    } catch (error) {
-        console.error('Error al listar las joyas:', error);
-        res.status(500).json({ msj: 'Error al listar las joyas' });
-    }
+//Actualizar
+exports.actualizarImagenJoya = async (req, res) => {
+  if (!req.nombreImagen)
+    return res.status(400).json({ msj: 'No se envió imagen' });
+
+  try {
+    const joyaActualizada = await joya.findByIdAndUpdate(
+      req.params.id,
+      { imagen: req.nombreImagen },
+      { new: true }
+    );
+    if (!joyaActualizada)
+      return res.status(404).json({ msj: 'Joya no encontrada' });
+
+    res.json({ msj: 'Imagen actualizada', joya: joyaActualizada });
+  } catch (e) {
+    res.status(500).json({ msj: 'Error al actualizar imagen' });
+  }
 };
 
-// Obtener una joya por su ID
+//Listar
+exports.listarJoyas = async (_req, res) => {
+  try {
+    const joyas = await joya.find()
+                            .populate('categoria', 'nombre descripcion');
+    res.json(joyas);
+  } catch (error) {
+    console.error('Error al listar joyas:', error);
+    res.status(500).json({ msj: 'Error al listar las joyas' });
+  }
+};
+
+//Obtener joya por ID
 exports.obtenerJoyaPorId = async (req, res) => {
-    try {
-        const joyaEncontrada = await joya.findOne({ _id: req.params.id });
-        if (!joyaEncontrada) {
-            return res.status(404).json({ msj: 'Joya no encontrada' });
-        }
-        res.status(200).json(joyaEncontrada);
-    } catch (error) {
-        console.error('Error al obtener la joya:', error);
-        res.status(500).json({ msj: 'Error al obtener la joya' });
-    }
+  try {
+    const encontrada = await joya.findById(req.params.id)
+                                 .populate('categoria', 'nombre descripcion');
+    if (!encontrada)
+      return res.status(404).json({ msj: 'Joya no encontrada' });
+
+    res.json(encontrada);
+  } catch (error) {
+    console.error('Error al obtener la joya:', error);
+    res.status(500).json({ msj: 'Error al obtener la joya' });
+  }
 };
 
-// Actualizar una joya por su ID
+//Actualizar joya por ID
 exports.actualizarJoya = async (req, res) => {
-    try {
-        const joyaActualizada = await joya.findByIdAndUpdate({ _id: req.params.id },
-            req.body,
-            { new: true });
-        if (!joyaActualizada) { 
-            return res.status(404).json({ msj: 'Joya no encontrada' });
-        } 
-         res.status(200).json({ msj: 'Joya actualizada exitosamente', joya: joyaActualizada });
+  try {
+    const { id } = req.params;
+    const datos = { ...req.body };
+
+    // Si llega categoría por nombre, conviértela a ObjectId
+    if (datos.categoria && !mongoose.Types.ObjectId.isValid(datos.categoria)) {
+      const cat = await Categoria.findOne({ nombre: datos.categoria.trim() });
+      if (!cat) return res.status(400).json({ msj: 'Categoría no encontrada' });
+      datos.categoria = cat._id;
     }
-        catch (error) {
-        console.error('Error al actualizar la joya:', error);
-        res.status(400).json({ msj: 'Error al actualizar la joya' });
-        }    
+
+    const joyaActualizada = await joya.findByIdAndUpdate(id, datos, {
+      new: true,
+      runValidators: true
+    }).populate('categoria', 'nombre descripcion');
+
+    if (!joyaActualizada)
+      return res.status(404).json({ msj: 'Joya no encontrada' });
+
+    res.json({ msj: 'Joya actualizada', joya: joyaActualizada });
+  } catch (error) {
+    console.error('Error al actualizar joya:', error);
+    res.status(500).json({ msj: 'Error interno al actualizar la joya' });
+  }
 };
 
-// Eliminar una joya por su ID
-exports.eliminarJoya = async (req, res) => { 
-    try {
-        const joyaEliminada = await joya.findOneAndDelete({ _id: req.params.id });
-        if (!joyaEliminada) {
-            return res.status(404).json({ msj: 'Joya no encontrada' });
-        }
-        res.status(200).json({ msj: 'Joya eliminada exitosamente' });
-    } catch (error) {
-        console.error('Error al eliminar la joya:', error);
-        res.status(500).json({ msj: 'Error al eliminar la joya' });
-    }
-}
+//Eliminar joya por ID
+exports.eliminarJoya = async (req, res) => {
+  try {
+    const joyaActual = await joya.findById(req.params.id);
+    if (!joyaActual)
+      return res.status(404).json({ msj: 'Joya no encontrada' });
+
+    if (joyaActual.stock > 0)
+      return res.status(400).json({ msj: 'No se puede eliminar: stock disponible' });
+
+    await joyaActual.deleteOne();
+    res.json({ msj: 'Joya eliminada exitosamente' });
+  } catch (error) {
+    console.error('Error al eliminar la joya:', error);
+    res.status(500).json({ msj: 'Error al eliminar la joya' });
+  }
+};

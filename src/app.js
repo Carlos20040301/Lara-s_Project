@@ -4,6 +4,11 @@ const { sequelize } = require('./configuracion/db');
 require('dotenv').config();
 const passport = require('./configuracion/passport');
 app.use(passport.initialize());
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+
+
 
 // Cargar conexión a MongoDB 
 const conectarMongoDB = require('./configuracion/baseDeDatosMongo');
@@ -18,10 +23,23 @@ app.use(express.json());
 app.use('/api/usuarios', usuariosRoutes);
 
 // Importar y usar las rutas de joyas
-const joyasRutas= require('./rutas/joyas');
+const joyasRutas = require('./rutas/joyas');
 app.use('/api/joyas', joyasRutas);
 
+// Importar y usar las rutas de pedidos
+const pedidosRutas = require('./rutas/pedidos');
+app.use('/api/pedidos', pedidosRutas);
+
+// Importar y usar las rutas de categorías
+const categoriasRutas = require('./rutas/categorias');
+app.use('/api/categorias', categoriasRutas);
+
 console.log('⏳ Conectando a la base de datos MySQL...');
+
+// Importar y usar las rutas de inventario
+const inventarioRutas = require('./rutas/inventarios');
+app.use('/api/inventarios', inventarioRutas);
+
 
 // Sincroniza modelos con la base de datos (crea las tablas si no existen)
 sequelize.sync()
@@ -39,112 +57,16 @@ sequelize.sync()
       console.log('   GET    /api/usuarios/:id');
       console.log('   PUT    /api/usuarios/:id');
       console.log('   DELETE /api/usuarios/:id');
+      console.log('   POST   /api/pedidos');
+      console.log('   GET    /api/pedidos');
+      console.log('   GET    /api/pedidos/:id');
+      console.log('   PUT    /api/pedidos/:id');
+      console.log('   DELETE /api/pedidos/:id');
+      console.log('   GET    /api/pedidos/estado/:estado');
     });
   })
   .catch(err => {
     console.error('❌ Error al sincronizar la base de datos:', err);
-
-const express = require('express');
-const app = express();
-const { sequelize } = require('./configuracion/db');
-require('./modelos/Usuario');
-require('./modelos/Pedido');
-const usuariosRoutes = require('./rutas/usuarios');
-
-app.use(express.json());
-app.use('/api/usuarios', usuariosRoutes);
-
-console.log('⏳ Conectando a la base de datos MySQL...');
   });
 
-// Sincroniza modelos con la base de datos (crea las tablas si no existen)
-sequelize.sync()
-  .then(() => {
-    console.log('✅ Base de datos conectada correctamente');
-    console.log('📦 Tablas sincronizadas:');
-    console.log('   - usuarios');
-    console.log('   - pedidos');
-    // Inicia el servidor en el puerto 3001
-    app.listen(3001, () => {
-      console.log('🚀 Servidor escuchando en http://localhost:3001');
-      console.log('👉 Endpoints disponibles:');
-      console.log('   POST   /api/usuarios/registro');
-      console.log('   GET    /api/usuarios');
-      console.log('   GET    /api/usuarios/:id');
-      console.log('   PUT    /api/usuarios/:id');
-      console.log('   DELETE /api/usuarios/:id');
-    });
-  })
-  .catch(err => {
-    console.error('❌ Error al sincronizar la base de datos:', err);
-  })
-  
-  
-<<<<<<< HEAD
-const express = require('express');
-const app = express();
-const { sequelize } = require('./configuracion/db');
-require('./modelos/Usuario');
-require('./modelos/Pedido');
-const usuariosRoutes = require('./rutas/usuarios');
-
-app.use(express.json());
-app.use('/api/usuarios', usuariosRoutes);
-
-console.log('⏳ Conectando a la base de datos MySQL...');
-
-// Sincroniza modelos con la base de datos (crea las tablas si no existen)
-sequelize.sync()
-  .then(() => {
-    console.log('✅ Base de datos conectada correctamente');
-    console.log('📦 Tablas sincronizadas:');
-    console.log('   - usuarios');
-    console.log('   - pedidos');
-    // Inicia el servidor en el puerto 3001
-    app.listen(3001, () => {
-      console.log('🚀 Servidor escuchando en http://localhost:3001');
-      console.log('👉 Endpoints disponibles:');
-      console.log('   POST   /api/usuarios/registro');
-      console.log('   GET    /api/usuarios');
-      console.log('   GET    /api/usuarios/:id');
-      console.log('   PUT    /api/usuarios/:id');
-      console.log('   DELETE /api/usuarios/:id');
-    });
-  })
-  .catch(err => {
-    console.error('❌ Error al sincronizar la base de datos:', err);
-=======
-const express = require('express');
-const app = express();
-const { sequelize } = require('./configuracion/db');
-require('./modelos/Usuario');
-require('./modelos/Pedido');
-const usuariosRoutes = require('./rutas/usuarios');
-
-app.use(express.json());
-app.use('/api/usuarios', usuariosRoutes);
-
-console.log('⏳ Conectando a la base de datos MySQL...');
-
-// Sincroniza modelos con la base de datos (crea las tablas si no existen)
-sequelize.sync()
-  .then(() => {
-    console.log('✅ Base de datos conectada correctamente');
-    console.log('📦 Tablas sincronizadas:');
-    console.log('   - usuarios');
-    console.log('   - pedidos');
-    // Inicia el servidor en el puerto 3001
-    app.listen(3001, () => {
-      console.log('🚀 Servidor escuchando en http://localhost:3001');
-      console.log('👉 Endpoints disponibles:');
-      console.log('   POST   /api/usuarios/registro');
-      console.log('   GET    /api/usuarios');
-      console.log('   GET    /api/usuarios/:id');
-      console.log('   PUT    /api/usuarios/:id');
-      console.log('   DELETE /api/usuarios/:id');
-    });
-  })
-  .catch(err => {
-    console.error('❌ Error al sincronizar la base de datos:', err);
->>>>>>> ca053c240583f5d6c8272b463ebcb0a57060675b
-  });
+  module.exports = app; // Exportar la aplicación para pruebas u otros usos

@@ -15,18 +15,26 @@ const joyasSchema = new mongoose.Schema({
     nombre: {
         type: String,
         required: true,
+        minlength: 3,
+        maxlength: 100,
         trim: true
     },
     categoria: {
-        type: String,
-        required: true,
-        enum: ['Anillo', 'Collar', 'Pulsera', 'Arete'], // Categorías permitidas
-        trim: true
-    },
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Categoria',
+    required: true
+},
+
      precio: {
         type: Number,
         required: true,
-        min: 0
+        min: 0,
+        validate: {
+            validator: function(v) {
+                return v >= 0; // Asegura que el precio no sea negativo
+            },
+            message: props => `${props.value} no es un precio válido!`
+        }
     },
     descripcion: {
         type: String,
