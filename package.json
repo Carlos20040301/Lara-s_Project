@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.js",
     "start": "node src/app.js"
-  },
+    },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,7 +17,6 @@
     "ejs": "^3.1.9",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
-    "jest": "^30.0.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
     "morgan": "^1.10.0",
@@ -34,5 +33,21 @@
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   },
+<<<<<<< HEAD
   "description": "Sistema de gestión de joyas con módulos de usuarios, joyas y pedidos"
+=======
+  "description": "Sistema de gestión de joyas con módulos de usuarios, joyas y pedidos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Carlos20040301/Lara-s_Project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Carlos20040301/Lara-s_Project/issues"
+  },
+  "homepage": "https://github.com/Carlos20040301/Lara-s_Project#readme",
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "supertest": "^7.1.3"
+  }
+>>>>>>> f201821d0c1234ab60134f7c804207756936936f
 }

@@ -4,6 +4,11 @@ const { sequelize } = require('./configuracion/db');
 require('dotenv').config();
 const passport = require('./configuracion/passport');
 app.use(passport.initialize());
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+
+
 
 // Cargar conexión a MongoDB 
 const conectarMongoDB = require('./configuracion/baseDeDatosMongo');
@@ -25,8 +30,22 @@ app.use('/api/joyas', joyasRutas);
 const pedidosRutas = require('./rutas/pedidos');
 app.use('/api/pedidos', pedidosRutas);
 
+<<<<<<< HEAD
 console.log('⏳ Conectando a la base de datos MySQL...');
 
+=======
+// Importar y usar las rutas de categorías
+const categoriasRutas = require('./rutas/categorias');
+app.use('/api/categorias', categoriasRutas);
+
+console.log('⏳ Conectando a la base de datos MySQL...');
+
+// Importar y usar las rutas de inventario
+const inventarioRutas = require('./rutas/inventarios');
+app.use('/api/inventarios', inventarioRutas);
+
+
+>>>>>>> f201821d0c1234ab60134f7c804207756936936f
 // Sincroniza modelos con la base de datos (crea las tablas si no existen)
 sequelize.sync()
   .then(() => {
@@ -53,4 +72,10 @@ sequelize.sync()
   })
   .catch(err => {
     console.error('❌ Error al sincronizar la base de datos:', err);
+<<<<<<< HEAD
   });
+=======
+  });
+
+  module.exports = app; // Exportar la aplicación para pruebas u otros usos
+>>>>>>> f201821d0c1234ab60134f7c804207756936936f
