@@ -18,6 +18,10 @@ app.use(express.json());
 app.use('/api/autenticacion', require('./rutas/autenticacion'));
 app.use('/api/usuarios', require('./rutas/usuarios'));
 app.use('/api/empleados', require('./rutas/empleados'));
+app.use('/api/categorias', require('./rutas/categorias'));
+app.use('/api/productos', require('./rutas/productos'));
+app.use('/api/pedidos', require('./rutas/pedidos'));
+app.use('/api/caja', require('./rutas/caja'));
 
 // Documentación Swagger
 const documentoSwagger = yaml.load(path.join(__dirname, './documentacion/swagger.yaml'));
