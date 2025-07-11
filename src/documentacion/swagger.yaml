@@ -1,0 +1,239 @@
+openapi: 3.0.0
+info:
+  title: API Joyería Lara's
+  version: 1.0.0
+paths:
+  /api/autenticacion/registro:
+    post:
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                correo: { type: string }
+                contrasena: { type: string }
+                rol: { type: string, enum: ['admin', 'empleado', 'cliente'] }
+      responses:
+        '201':
+          description: Usuario registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  usuario: { type: object }
+        '400':
+          description: Error de validación
+        '500':
+          description: Error en el servidor
+  /api/autenticacion/iniciar-sesion:
+    post:
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo: { type: string }
+                contrasena: { type: string }
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  usuario: { type: object }
+        '401':
+          description: Credenciales inválidas
+        '500':
+          description: Error en el servidor
+  /api/usuarios:
+    get:
+      summary: Listar todos los usuarios
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuarios
+        '401':
+          description: No autorizado
+        '403':
+          description: Acceso denegado
+  /api/usuarios/{id}:
+    get:
+      summary: Consultar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del usuario
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+    put:
+      summary: Actualizar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                correo: { type: string }
+                contrasena: { type: string }
+      responses:
+        '200':
+          description: Usuario actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+    delete:
+      summary: Eliminar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario eliminado
+        '400':
+          description: Error de dependencias
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+  /api/empleados:
+    get:
+      summary: Listar todos los empleados
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de empleados
+        '401':
+          description: No autorizado
+        '403':
+          description: Acceso denegado
+    post:
+      summary: Crear un nuevo empleado
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_usuario: { type: integer }
+                cargo: { type: string }
+                telefono: { type: string }
+      responses:
+        '201':
+          description: Empleado creado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+  /api/empleados/{id}:
+    get:
+      summary: Consultar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del empleado
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+    put:
+      summary: Actualizar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cargo: { type: string }
+                telefono: { type: string }
+      responses:
+        '200':
+          description: Empleado actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+    delete:
+      summary: Eliminar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Empleado eliminado
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
