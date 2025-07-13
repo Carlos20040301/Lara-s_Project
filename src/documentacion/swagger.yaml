@@ -1,0 +1,1005 @@
+openapi: 3.0.0
+info:
+  title: API Joyería Lara's
+  version: 1.0.0
+  description: API RESTful para gestión de joyería Lara's
+  contact:
+    name: Equipo de Desarrollo
+    email: desarrollo@joyerialaras.com
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+  - url: https://api.joyerialaras.com
+    description: Servidor de producción
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Categoria:
+      type: object
+      properties:
+        id: { type: integer }
+        nombre: { type: string, maxLength: 100 }
+        descripcion: { type: string }
+        activo: { type: boolean }
+        fecha_creacion: { type: string, format: date-time }
+        fecha_actualizacion: { type: string, format: date-time }
+    Producto:
+      type: object
+      properties:
+        id: { type: integer }
+        codigo: { type: string, maxLength: 50 }
+        nombre: { type: string, maxLength: 200 }
+        descripcion: { type: string }
+        precio: { type: number, format: float }
+        stock: { type: integer, minimum: 0 }
+        imagen: { type: string }
+        categoria_id: { type: integer }
+        activo: { type: boolean }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+    Venta:
+      type: object
+      properties:
+        id: { type: integer }
+        numero_pedido: { type: string, maxLength: 50 }
+        cliente_nombre: { type: string, maxLength: 200 }
+        cliente_email: { type: string, format: email }
+        cliente_telefono: { type: string, maxLength: 20 }
+        direccion_entrega: { type: string }
+        subtotal: { type: number, format: float }
+        impuesto: { type: number, format: float }
+        total: { type: number, format: float }
+        estado: { type: string, enum: ['pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado'] }
+        metodo_pago: { type: string, enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal'] }
+        notas: { type: string }
+        empleado_id: { type: integer }
+        fecha_creacion: { type: string, format: date-time }
+        fecha_actualizacion: { type: string, format: date-time }
+    Facturacion:
+      type: object
+      properties:
+        id: { type: integer }
+        venta_id: { type: integer }
+        producto_id: { type: integer }
+        cantidad: { type: integer, minimum: 1 }
+        precio_unitario: { type: number, format: float }
+        subtotal: { type: number, format: float }
+        descuento: { type: number, format: float }
+        total: { type: number, format: float }
+        producto: { $ref: '#/components/schemas/Producto' }
+    Caja:
+      type: object
+      properties:
+        id: { type: integer }
+        tipo: { type: string, enum: ['ingreso', 'egreso'] }
+        concepto: { type: string, maxLength: 200 }
+        monto: { type: number, format: float, minimum: 0 }
+        metodo_pago: { type: string, enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal'] }
+        referencia: { type: string, maxLength: 100 }
+        venta_id: { type: integer }
+        empleado_id: { type: integer }
+        fecha_movimiento: { type: string, format: date-time }
+        notas: { type: string }
+        fecha_creacion: { type: string, format: date-time }
+        fecha_actualizacion: { type: string, format: date-time }
+paths:
+  /api/autenticacion/registro:
+    post:
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                correo: { type: string }
+                contrasena: { type: string }
+                rol: { type: string, enum: ['admin', 'empleado', 'cliente'] }
+      responses:
+        '201':
+          description: Usuario registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  usuario: { type: object }
+        '400':
+          description: Error de validación
+        '500':
+          description: Error en el servidor
+  /api/autenticacion/iniciar-sesion:
+    post:
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo: { type: string }
+                contrasena: { type: string }
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  usuario: { type: object }
+        '401':
+          description: Credenciales inválidas
+        '500':
+          description: Error en el servidor
+  /api/usuarios:
+    get:
+      summary: Listar todos los usuarios
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuarios
+        '401':
+          description: No autorizado
+        '403':
+          description: Acceso denegado
+  /api/usuarios/{id}:
+    get:
+      summary: Consultar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del usuario
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+    put:
+      summary: Actualizar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                correo: { type: string }
+                contrasena: { type: string }
+      responses:
+        '200':
+          description: Usuario actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+    delete:
+      summary: Eliminar un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario eliminado
+        '400':
+          description: Error de dependencias
+        '401':
+          description: No autorizado
+        '404':
+          description: Usuario no encontrado
+  /api/empleados:
+    get:
+      summary: Listar todos los empleados
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de empleados
+        '401':
+          description: No autorizado
+        '403':
+          description: Acceso denegado
+    post:
+      summary: Crear un nuevo empleado
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_usuario: { type: integer }
+                cargo: { type: string }
+                telefono: { type: string }
+      responses:
+        '201':
+          description: Empleado creado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+  /api/empleados/{id}:
+    get:
+      summary: Consultar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del empleado
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+    put:
+      summary: Actualizar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cargo: { type: string }
+                telefono: { type: string }
+      responses:
+        '200':
+          description: Empleado actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+    delete:
+      summary: Eliminar un empleado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Empleado eliminado
+        '401':
+          description: No autorizado
+        '404':
+          description: Empleado no encontrado
+  /api/categorias:
+    get:
+      summary: Obtener todas las categorías
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: 
+                    type: array
+                    items: { $ref: '#/components/schemas/Categoria' }
+        '500':
+          description: Error en el servidor
+    post:
+      summary: Crear nueva categoría
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre]
+              properties:
+                nombre: { type: string, maxLength: 100 }
+                descripcion: { type: string }
+      responses:
+        '201':
+          description: Categoría creada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Categoria' }
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+  /api/categorias/{id}:
+    get:
+      summary: Obtener categoría por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles de la categoría
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Categoria' }
+        '404':
+          description: Categoría no encontrada
+        '500':
+          description: Error en el servidor
+    put:
+      summary: Actualizar categoría
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string, maxLength: 100 }
+                descripcion: { type: string }
+      responses:
+        '200':
+          description: Categoría actualizada
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Categoría no encontrada
+        '500':
+          description: Error en el servidor
+    delete:
+      summary: Eliminar categoría
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Categoría eliminada
+        '400':
+          description: No se puede eliminar (tiene productos)
+        '401':
+          description: No autorizado
+        '404':
+          description: Categoría no encontrada
+        '500':
+          description: Error en el servidor
+  /api/productos:
+    get:
+      summary: Obtener todos los productos
+      parameters:
+        - in: query
+          name: categoria_id
+          schema:
+            type: integer
+          description: Filtrar por categoría
+        - in: query
+          name: busqueda
+          schema:
+            type: string
+          description: Buscar por nombre, código o descripción
+        - in: query
+          name: stock_minimo
+          schema:
+            type: integer
+          description: Filtrar por stock mínimo
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: 
+                    type: array
+                    items: { $ref: '#/components/schemas/Producto' }
+        '500':
+          description: Error en el servidor
+    post:
+      summary: Crear nuevo producto
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [codigo, nombre, precio, stock, categoria_id]
+              properties:
+                codigo: { type: string, maxLength: 50 }
+                nombre: { type: string, maxLength: 200 }
+                descripcion: { type: string }
+                precio: { type: number, minimum: 0 }
+                stock: { type: integer, minimum: 0 }
+                categoria_id: { type: integer }
+                imagen: 
+                  type: string
+                  format: binary
+                  description: Imagen del producto (JPG, PNG, máx 5MB)
+      responses:
+        '201':
+          description: Producto creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Producto' }
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+  /api/productos/{id}:
+    get:
+      summary: Obtener producto por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del producto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Producto' }
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error en el servidor
+    put:
+      summary: Actualizar producto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                codigo: { type: string, maxLength: 50 }
+                nombre: { type: string, maxLength: 200 }
+                descripcion: { type: string }
+                precio: { type: number, minimum: 0 }
+                stock: { type: integer, minimum: 0 }
+                categoria_id: { type: integer }
+                imagen: 
+                  type: string
+                  format: binary
+                  description: Nueva imagen del producto
+      responses:
+        '200':
+          description: Producto actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error en el servidor
+    delete:
+      summary: Eliminar producto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Producto eliminado
+        '400':
+          description: No se puede eliminar (tiene ventas)
+        '401':
+          description: No autorizado
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error en el servidor
+  /api/productos/{id}/stock:
+    patch:
+      summary: Actualizar stock de producto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stock]
+              properties:
+                stock: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Stock actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error en el servidor
+  /api/pedidos:
+    get:
+      summary: Obtener todos los pedidos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            enum: ['pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado']
+          description: Filtrar por estado
+        - in: query
+          name: fecha_inicio
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio para filtrar
+        - in: query
+          name: fecha_fin
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin para filtrar
+        - in: query
+          name: cliente_email
+          schema:
+            type: string
+          description: Filtrar por email del cliente
+      responses:
+        '200':
+          description: Lista de pedidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: 
+                    type: array
+                    items: { $ref: '#/components/schemas/Venta' }
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+    post:
+      summary: Crear nuevo pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cliente_nombre, cliente_email, productos, metodo_pago]
+              properties:
+                cliente_nombre: { type: string, maxLength: 200 }
+                cliente_email: { type: string, format: email }
+                cliente_telefono: { type: string, maxLength: 20 }
+                direccion_entrega: { type: string }
+                productos:
+                  type: array
+                  items:
+                    type: object
+                    required: [producto_id, cantidad]
+                    properties:
+                      producto_id: { type: integer }
+                      cantidad: { type: integer, minimum: 1 }
+                      descuento: { type: number, minimum: 0, default: 0 }
+                metodo_pago: { type: string, enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal'] }
+                notas: { type: string }
+      responses:
+        '201':
+          description: Pedido creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Venta' }
+        '400':
+          description: Error de validación
+        '500':
+          description: Error en el servidor
+  /api/pedidos/{id}:
+    get:
+      summary: Obtener pedido por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del pedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Venta' }
+        '401':
+          description: No autorizado
+        '404':
+          description: Pedido no encontrado
+        '500':
+          description: Error en el servidor
+  /api/pedidos/{id}/estado:
+    patch:
+      summary: Actualizar estado del pedido
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: ['pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado'] }
+      responses:
+        '200':
+          description: Estado actualizado
+        '400':
+          description: Estado no válido
+        '401':
+          description: No autorizado
+        '404':
+          description: Pedido no encontrado
+        '500':
+          description: Error en el servidor
+  /api/pedidos/{id}:
+    delete:
+      summary: Eliminar pedido (solo cancelados)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pedido eliminado
+        '400':
+          description: Solo se pueden eliminar pedidos cancelados
+        '401':
+          description: No autorizado
+        '404':
+          description: Pedido no encontrado
+        '500':
+          description: Error en el servidor
+  /api/caja:
+    get:
+      summary: Obtener movimientos de caja
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: tipo
+          schema:
+            type: string
+            enum: ['ingreso', 'egreso']
+          description: Filtrar por tipo de movimiento
+        - in: query
+          name: fecha_inicio
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio para filtrar
+        - in: query
+          name: fecha_fin
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin para filtrar
+        - in: query
+          name: metodo_pago
+          schema:
+            type: string
+            enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal']
+          description: Filtrar por método de pago
+      responses:
+        '200':
+          description: Lista de movimientos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      movimientos:
+                        type: array
+                        items: { $ref: '#/components/schemas/Caja' }
+                      resumen:
+                        type: object
+                        properties:
+                          totalIngresos: { type: number }
+                          totalEgresos: { type: number }
+                          balance: { type: number }
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+    post:
+      summary: Crear nuevo movimiento
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tipo, concepto, monto]
+              properties:
+                tipo: { type: string, enum: ['ingreso', 'egreso'] }
+                concepto: { type: string, maxLength: 200 }
+                monto: { type: number, minimum: 0 }
+                metodo_pago: { type: string, enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal'], default: 'efectivo' }
+                referencia: { type: string, maxLength: 100 }
+                venta_id: { type: integer }
+                notas: { type: string }
+      responses:
+        '201':
+          description: Movimiento creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Caja' }
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+  /api/caja/resumen:
+    get:
+      summary: Obtener resumen de caja
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: fecha_inicio
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio para el resumen
+        - in: query
+          name: fecha_fin
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin para el resumen
+      responses:
+        '200':
+          description: Resumen de caja
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      totalIngresos: { type: number }
+                      totalEgresos: { type: number }
+                      balance: { type: number }
+                      porMetodoPago: { type: object }
+                      cantidadMovimientos: { type: integer }
+        '401':
+          description: No autorizado
+        '500':
+          description: Error en el servidor
+  /api/caja/{id}:
+    get:
+      summary: Obtener movimiento por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalles del movimiento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Caja' }
+        '401':
+          description: No autorizado
+        '404':
+          description: Movimiento no encontrado
+        '500':
+          description: Error en el servidor
+    put:
+      summary: Actualizar movimiento
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                concepto: { type: string, maxLength: 200 }
+                monto: { type: number, minimum: 0 }
+                metodo_pago: { type: string, enum: ['efectivo', 'tarjeta', 'transferencia', 'paypal'] }
+                referencia: { type: string, maxLength: 100 }
+                notas: { type: string }
+      responses:
+        '200':
+          description: Movimiento actualizado
+        '400':
+          description: Error de validación
+        '401':
+          description: No autorizado
+        '404':
+          description: Movimiento no encontrado
+        '500':
+          description: Error en el servidor
+    delete:
+      summary: Eliminar movimiento
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Movimiento eliminado
+        '400':
+          description: No se puede eliminar (relacionado con venta)
+        '401':
+          description: No autorizado
+        '404':
+          description: Movimiento no encontrado
+        '500':
+          description: Error en el servidor
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
