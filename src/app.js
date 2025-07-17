@@ -23,6 +23,11 @@ app.use('/api/productos', require('./rutas/productos'));
 app.use('/api/pedidos', require('./rutas/pedidos'));
 app.use('/api/caja', require('./rutas/caja'));
 app.use('/api/clientes', require('./rutas/cliente'));
+app.use('/api/reporteVenta', require('./rutas/reporteventa'));
+app.use('/api/proveedor', require('./rutas/proveedor'));
+app.use('/api/compraProducto', require('./rutas/compraproducto'));
+app.use('/api/compra', require('./rutas/compra'));
+app.use('/api/inventario', require('./rutas/inventario'));
 
 // Documentación Swagger
 const documentoSwagger = yaml.load(path.join(__dirname, './documentacion/swagger.yaml'));
