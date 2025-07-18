@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: process.env.EMAIL_PORT || 587,
-  secure: false, // true para 465, false para otros puertos
+  secure: false, 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -143,8 +143,32 @@ const enviarActualizacionEstado = async (pedido, nuevoEstado) => {
   });
 };
 
+// Función para enviar email de bienvenida a empleado
+const enviarBienvenidaEmpleado = async ({ nombre, correo, cargo }) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">¡Bienvenido a Lara's Joyería!</h2>
+      <p>¡Hola <strong>${nombre}</strong>!</p>
+      <p>Has sido registrado como empleado en Lara's Joyería.</p>
+      <p><strong>Tu cargo:</strong> ${cargo.charAt(0).toUpperCase() + cargo.slice(1)}</p>
+      <p>Si tienes dudas, contacta a tu administrador.</p>
+      <br>
+      <p>¡Bienvenido al equipo!</p>
+      <div style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">
+        <p>Joyería Lara's - Tu joyería de confianza</p>
+      </div>
+    </div>
+  `;
+  return await enviarEmail({
+    to: correo,
+    subject: "¡Bienvenido a Lara's Joyería!",
+    html: html
+  });
+};
+
 module.exports = {
   enviarEmail,
   enviarConfirmacionPedido,
-  enviarActualizacionEstado
+  enviarActualizacionEstado,
+  enviarBienvenidaEmpleado
 }; 

@@ -3,7 +3,6 @@ const Facturacion = require('../modelos/Facturacion');
 const Producto = require('../modelos/Producto');
 const Caja = require('../modelos/Caja');
 const { Op } = require('sequelize');
-const { nanoid } = require('nanoid');
 const enviarEmail = require('../configuraciones/email');
 
 // Obtener todos los pedidos
@@ -154,6 +153,7 @@ const crearPedido = async (req, res) => {
     const total = subtotal + impuesto;
 
     // Generar número de pedido único
+    const { nanoid } = await import('nanoid');
     const numeroPedido = `PED-${nanoid(8).toUpperCase()}`;
 
     // Crear la venta

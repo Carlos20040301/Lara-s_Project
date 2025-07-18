@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Empleado = require('../modelos/Empleado');
 const Usuario = require('../modelos/Usuario');
+const { enviarBienvenidaEmpleado } = require('../configuraciones/email');
 
 const obtenerEmpleados = [
   async (req, res) => {
@@ -44,6 +45,12 @@ const crearEmpleado = [
         return res.status(400).json({ mensaje: 'Usuario no válido o no es empleado' });
       }
       const empleado = await Empleado.create({ id_usuario, cargo, telefono });
+      // Enviar correo de bienvenida
+      try {
+        await enviarBienvenidaEmpleado({ nombre: usuario.nombre, correo: usuario.correo, cargo });
+      } catch (err) {
+        console.error('No se pudo enviar el correo de bienvenida:', err);
+      }
       res.status(201).json(empleado);
     } catch (error) {
       res.status(500).json({ mensaje: 'Error en el servidor', error });
