@@ -1,30 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const cajaController = require('../controladores/cajaController');
+const controladorCaja = require('../controladores/controladorCaja');
 const middlewareAutenticacion = require('../middlewares/middlewareAutenticacion');
 
 // Todas las rutas protegidas (solo empleados y admins)
 router.use(middlewareAutenticacion(['admin']));
 
 // Rutas de lectura
-router.get('/', cajaController.obtenerMovimientos);
-router.get('/resumen', cajaController.obtenerResumenCaja);
-router.get('/:id', cajaController.obtenerMovimientoPorId);
+router.get('/', controladorCaja.obtenerMovimientos);
+router.get('/resumen', controladorCaja.obtenerResumenCaja);
+router.get('/:id', controladorCaja.obtenerMovimientoPorId);
 
 // Rutas de escritura (solo admins)
 router.post('/',
   middlewareAutenticacion(['admin']),
-  cajaController.crearMovimiento
+  controladorCaja.crearMovimiento
 );
 
 router.put('/:id',
   middlewareAutenticacion(['admin']),
-  cajaController.actualizarMovimiento
+  controladorCaja.actualizarMovimiento
 );
 
 router.delete('/:id',
   middlewareAutenticacion(['admin']),
-  cajaController.eliminarMovimiento
+  controladorCaja.eliminarMovimiento
 );
 
 module.exports = router; 

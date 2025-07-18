@@ -9,7 +9,6 @@ const obtenerCategorias = async (req, res) => {
       where: { activo: true },
       order: [['nombre', 'ASC']]
     });
-
     res.json({
       success: true,
       data: categorias
@@ -26,7 +25,7 @@ const obtenerCategorias = async (req, res) => {
 // Obtener una categoría por ID
 const obtenerCategoriaPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const categoria = await Categoria.findByPk(id, {
       include: [{
         model: Producto,
@@ -35,14 +34,12 @@ const obtenerCategoriaPorId = async (req, res) => {
         required: false
       }]
     });
-
     if (!categoria) {
       return res.status(404).json({
         success: false,
         message: 'Categoría no encontrada'
       });
     }
-
     res.json({
       success: true,
       data: categoria
@@ -60,7 +57,6 @@ const obtenerCategoriaPorId = async (req, res) => {
 const crearCategoria = async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
-
     // Validar que el nombre no esté duplicado
     const categoriaExistente = await Categoria.findOne({
       where: { 
@@ -68,19 +64,16 @@ const crearCategoria = async (req, res) => {
         activo: true
       }
     });
-
     if (categoriaExistente) {
       return res.status(400).json({
         success: false,
         message: 'Ya existe una categoría con ese nombre'
       });
     }
-
     const nuevaCategoria = await Categoria.create({
       nombre,
       descripcion
     });
-
     res.status(201).json({
       success: true,
       message: 'Categoría creada exitosamente',
@@ -98,9 +91,8 @@ const crearCategoria = async (req, res) => {
 // Actualizar categoría
 const actualizarCategoria = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const { nombre, descripcion } = req.body;
-
     const categoria = await Categoria.findByPk(id);
     if (!categoria) {
       return res.status(404).json({
@@ -108,7 +100,6 @@ const actualizarCategoria = async (req, res) => {
         message: 'Categoría no encontrada'
       });
     }
-
     // Validar que el nombre no esté duplicado (excluyendo la categoría actual)
     if (nombre && nombre !== categoria.nombre) {
       const categoriaExistente = await Categoria.findOne({
@@ -118,7 +109,6 @@ const actualizarCategoria = async (req, res) => {
           id: { [Op.ne]: id }
         }
       });
-
       if (categoriaExistente) {
         return res.status(400).json({
           success: false,
@@ -126,12 +116,10 @@ const actualizarCategoria = async (req, res) => {
         });
       }
     }
-
     await categoria.update({
       nombre: nombre || categoria.nombre,
       descripcion: descripcion !== undefined ? descripcion : categoria.descripcion
     });
-
     res.json({
       success: true,
       message: 'Categoría actualizada exitosamente',
@@ -149,7 +137,7 @@ const actualizarCategoria = async (req, res) => {
 // Eliminar categoría (soft delete)
 const eliminarCategoria = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
 
     const categoria = await Categoria.findByPk(id);
     if (!categoria) {
@@ -158,7 +146,6 @@ const eliminarCategoria = async (req, res) => {
         message: 'Categoría no encontrada'
       });
     }
-
     // Verificar que no haya productos asociados
     const productosAsociados = await Producto.count({
       where: { 
@@ -166,16 +153,13 @@ const eliminarCategoria = async (req, res) => {
         activo: true
       }
     });
-
     if (productosAsociados > 0) {
       return res.status(400).json({
         success: false,
         message: `No se puede eliminar la categoría. Tiene ${productosAsociados} producto(s) asociado(s)`
       });
     }
-
     await categoria.update({ activo: false });
-
     res.json({
       success: true,
       message: 'Categoría eliminada exitosamente'

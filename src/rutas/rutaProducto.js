@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const productosController = require('../controladores/productosController');
+const controladorProducto = require('../controladores/controladorProducto');
 const middlewareAutenticacion = require('../middlewares/middlewareAutenticacion');
 const uploadMiddleware = require('../middlewares/uploadMiddleware');
 
 // Rutas públicas (solo lectura)
-router.get('/', productosController.obtenerProductos);
-router.get('/:id', productosController.obtenerProductoPorId);
+router.get('/', controladorProducto.obtenerProductos);
+router.get('/:id', controladorProducto.obtenerProductoPorId);
 
 // Rutas protegidas (solo admins)
 router.post('/', 
@@ -14,7 +14,7 @@ router.post('/',
   //middlewareAutenticacion.verificarAdmin,
   middlewareAutenticacion(['admin']), 
   uploadMiddleware.single('imagen'), 
-  productosController.crearProducto
+  controladorProducto.crearProducto
 );
 
 router.put('/:id', 
@@ -22,21 +22,21 @@ router.put('/:id',
   //middlewareAutenticacion.verificarAdmin,
   middlewareAutenticacion(['admin']), 
   uploadMiddleware.single('imagen'), 
-  productosController.actualizarProducto
+  controladorProducto.actualizarProducto
 );
 
 router.delete('/:id', 
   //middlewareAutenticacion.verificarToken, 
   //middlewareAutenticacion.verificarAdmin,
   middlewareAutenticacion(['admin']),
-  productosController.eliminarProducto
+  controladorProducto.eliminarProducto
 );
 
 // Ruta para actualizar stock (empleados autorizados)
 router.patch('/:id/stock', 
  // middlewareAutenticacion.verificarToken, 
   middlewareAutenticacion(['empleado','admin']),
-  productosController.actualizarStock
+  controladorProducto.actualizarStock
 );
 
 module.exports = router; 

@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, query } = require('express-validator');
 const controladorCliente = require('../controladores/controladorCliente');
-const Cliente = require('../modelos/cliente');
+const Cliente = require('../modelos/Cliente');
 const { where } = require('sequelize');
 const router = express.Router();
 

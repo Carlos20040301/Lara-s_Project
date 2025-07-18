@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-const Cliente = require('../modelos/cliente');
+const Cliente = require('../modelos/Cliente');
 const { where } = require('sequelize');
 
 exports.listarClientes = async (req, res) => {
