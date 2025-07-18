@@ -1,3 +1,126 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Autenticación
+ *   description: Endpoints para el registro e inicio de sesión de usuarios
+ */
+
+/**
+ * @swagger
+ * /autenticacion/registro:
+ *   post:
+ *     summary: Registrar un nuevo usuario
+ *     tags: [Autenticación]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - correo
+ *               - contrasena
+ *               - rol
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre completo del usuario
+ *               correo:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo electrónico del usuario
+ *               contrasena:
+ *                 type: string
+ *                 description: Contraseña del usuario (mínimo 6 caracteres)
+ *               rol:
+ *                 type: string
+ *                 enum: [admin, empleado, cliente]
+ *                 description: Rol del usuario
+ *           example:
+ *             nombre: "Juan Pérez"
+ *             correo: "juan@example.com"
+ *             contrasena: "123456"
+ *             rol: "admin"
+ *     responses:
+ *       201:
+ *         description: Usuario registrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT generado
+ *                 usuario:
+ *                   type: object
+ *                   description: Datos del usuario registrado
+ *             example:
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               usuario:
+ *                 id: 1
+ *                 nombre: "Juan Pérez"
+ *                 correo: "juan@example.com"
+ *                 rol: "admin"
+ *       400:
+ *         description: Error de validación en los datos enviados
+ *       500:
+ *         description: Error interno del servidor
+ */
+
+/**
+ * @swagger
+ * /autenticacion/iniciar-sesion:
+ *   post:
+ *     summary: Iniciar sesión de usuario
+ *     tags: [Autenticación]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - correo
+ *               - contrasena
+ *             properties:
+ *               correo:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo electrónico del usuario
+ *               contrasena:
+ *                 type: string
+ *                 description: Contraseña del usuario
+ *           example:
+ *             correo: "juan@example.com"
+ *             contrasena: "123456"
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Token JWT generado
+ *                 usuario:
+ *                   type: object
+ *                   description: Datos del usuario autenticado
+ *             example:
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               usuario:
+ *                 id: 1
+ *                 nombre: "Juan Pérez"
+ *                 correo: "juan@example.com"
+ *                 rol: "admin"
+ *       401:
+ *         description: Credenciales inválidas
+ *       500:
+ *         description: Error interno del servidor
+ */
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
