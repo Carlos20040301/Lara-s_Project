@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./configuraciones/swagger.js');
 const yaml = require('yamljs');
 const path = require('path');
 const sequelize = require('./configuraciones/base_datos');
@@ -29,9 +30,16 @@ app.use('/api/compraProducto', require('./rutas/compraproducto'));
 app.use('/api/compra', require('./rutas/compra'));
 app.use('/api/inventario', require('./rutas/inventario'));
 
-// Documentación Swagger
+// Documentacion de Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+/*Documentación Swagger
 const documentoSwagger = yaml.load(path.join(__dirname, './documentacion/swagger.yaml'));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentoSwagger));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(documentoSwagger));*/
 
 // Iniciar servidor
 const PUERTO = process.env.PUERTO || 3000;

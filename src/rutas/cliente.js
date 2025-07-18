@@ -5,7 +5,98 @@ const Cliente = require('../modelos/cliente');
 const { where } = require('sequelize');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *  name: Cliente
+ *  description: Peticiones para la gestion de clientes
+ */
+/**
+ * @swagger
+ * /clientes/listar:
+ *  get:
+ *   summary: Listar todos los clientes
+ *   tags: [Cliente]
+ *   responses:
+ *    200:
+ *     description: Listar los clientes
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: array
+ *        items:
+ *         type: object
+ *         properties:
+ *          primerNombre:
+ *           type: string
+ *           description: Primer nombre del cliente
+ *          segundoNombre:
+ *           type: string
+ *           description: Segundo nombre del cliente
+ *          primerApellido:
+ *           type: string
+ *           description: Primer apellido del cliente
+ *          segundoApellido:
+ *           type: string
+ *           description: Segundo apellido del cliente
+ *          estado:
+ *           type: enum
+ *           enum: [activo, inactivo]
+ *           description: Estado del cliente
+ *          rtn:
+ *           type: string
+ *           description: RTN del cliente
+ *          genero: 
+ *           type: enum
+ *           enum: [M, F]
+ *           description: Genero con el que se identifica el cliente
+ *    400:
+ *     description: Error al listar los clientes
+ */
 router.get('/listar', controladorCliente.listarClientes);
+
+/**
+ * @swagger
+ * /clientes/guardar:
+ *  post:
+ *   summary: Guardar todos los clientes
+ *   tags: [Cliente]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *       type: object
+ *       properties:
+ *        primerNombre:
+ *         type: string
+ *         description: Primer nombre del cliente
+ *        segundoNombre:
+ *         type: string
+ *         description: Segundo nombre del cliente
+ *        primerApellido:
+ *         type: string
+ *         description: Primer apellido del cliente
+ *        segundoApellido:
+ *         type: string
+ *         description: Segundo apellido del cliente
+ *        estado:
+ *         type: enum
+ *         enum: [activo, inactivo]
+ *         description: Estado del cliente
+ *        rtn:
+ *         type: string
+ *         description: RTN del cliente
+ *        genero: 
+ *         type: enum
+ *         enum: [M, F]
+ *         description: Genero con el que se identifica el cliente
+ *   responses:
+ *    201:
+ *     description: Crear/guarda los clientes
+ *    400:
+ *     description: Error al guardar los clientes
+ */
 router.post('/guardar',
 
     // Campos Obligatorios
@@ -42,6 +133,55 @@ router.post('/guardar',
     controladorCliente.guardarCliente
 )
 
+/**
+ * @swagger
+ * /clientes/editar:
+ *   put:
+ *     summary: Actualiza un cliente por su ID
+ *     tags: [Cliente]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del cliente
+ *     requestBody:
+ *      required: true
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *         properties:
+ *          primerNombre:
+ *           type: string
+ *           description: Primer nombre del cliente
+ *          segundoNombre:
+ *           type: string
+ *           description: Segundo nombre del cliente
+ *          primerApellido:
+ *           type: string
+ *           description: Primer apellido del cliente
+ *          segundoApellido:
+ *           type: string
+ *           description: Segundo apellido del cliente
+ *          estado:
+ *           type: string
+ *           enum: [activo, inactivo]
+ *           description: Estado del cliente
+ *          rtn:
+ *           type: string
+ *           description: RTN del cliente
+ *          genero: 
+ *           type: string
+ *           enum: [M, F]
+ *           description: Genero con el que se identifica el cliente
+ *     responses:
+ *       201:
+ *         description: Cliente Actualizado
+ *       400:
+ *         description: Error al actualizar el cliente
+ */
 router.put('/editar',
 
     // Validación de ID
@@ -89,6 +229,25 @@ router.put('/editar',
     controladorCliente.editarCliente
 )
 
+/**
+ * @swagger
+ * /clientes/eliminar:
+ *   delete:
+ *     summary: Eliminar cliente
+ *     tags: [Cliente]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del cliente
+ *     responses:
+ *       200:
+ *         description: Cliente eliminado
+ *       400:
+ *         description: Error al eliminar el cliente
+ */
 router.delete('/eliminar',
 
     // Validación de ID
