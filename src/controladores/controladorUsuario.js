@@ -46,7 +46,7 @@ const actualizarUsuario = [
     if (!errors.isEmpty()) {
       return res.status(400).json({ errores: errors.array() });
     }
-    const { nombre, correo, contrasena, rol } = req.body;
+    const { primerNombre, segundoNombre, primerApellido, segundoApellido, genero, correo, contrasena, rol } = req.body;
     try {
       const usuario = await Usuario.findByPk(req.query.id);
       if (!usuario) {
@@ -59,12 +59,25 @@ const actualizarUsuario = [
         }
       }
       const actualizaciones = {};
-      if (nombre) actualizaciones.nombre = nombre;
+      if (primerNombre) actualizaciones.primerNombre = primerNombre;
+      if (segundoNombre) actualizaciones.segundoNombre = segundoNombre;
+      if (primerApellido) actualizaciones.primerApellido = primerApellido;
+      if (segundoApellido) actualizaciones.segundoApellido = segundoApellido;
+      if (genero) actualizaciones.genero = genero;
       if (correo) actualizaciones.correo = correo;
       if (contrasena) actualizaciones.contrasena = await argon2.hash(contrasena);
       if (rol) actualizaciones.rol = rol;
       await usuario.update(actualizaciones);
-      res.json({ mensaje: 'Usuario actualizado', usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol } });
+      res.json({ mensaje: 'Usuario actualizado', usuario: {
+        id: usuario.id,
+        primerNombre: usuario.primerNombre,
+        segundoNombre: usuario.segundoNombre,
+        primerApellido: usuario.primerApellido,
+        segundoApellido: usuario.segundoApellido,
+        genero: usuario.genero,
+        correo: usuario.correo,
+        rol: usuario.rol
+      }});
     } catch (error) {
       res.status(500).json({ mensaje: 'Error en el servidor', error });
     }
@@ -94,4 +107,31 @@ const eliminarUsuario = [
   },
 ];
 
-module.exports = { obtenerUsuarios, obtenerUsuario, actualizarUsuario, eliminarUsuario };
+const crearUsuario = async (req, res) => {
+  try {
+    const { primerNombre, segundoNombre, primerApellido, segundoApellido, genero, correo, contrasena, rol } = req.body;
+    // Validar que el correo no exista
+    const usuarioExistente = await Usuario.findOne({ where: { correo } });
+    if (usuarioExistente) {
+      return res.status(400).json({ mensaje: 'Correo ya registrado' });
+    }
+    // Hash de la contraseña
+    const hash = await argon2.hash(contrasena);
+    const nuevoUsuario = await Usuario.create({ primerNombre, segundoNombre, primerApellido, segundoApellido, genero, correo, contrasena: hash, rol });
+    res.status(201).json({
+      id: nuevoUsuario.id,
+      primerNombre: nuevoUsuario.primerNombre,
+      segundoNombre: nuevoUsuario.segundoNombre,
+      primerApellido: nuevoUsuario.primerApellido,
+      segundoApellido: nuevoUsuario.segundoApellido,
+      genero: nuevoUsuario.genero,
+      correo: nuevoUsuario.correo,
+      rol: nuevoUsuario.rol
+    });
+  } catch (error) {
+    console.error('Error al crear usuario:', error); // Log detallado
+    res.status(500).json({ mensaje: 'Error al crear usuario', error });
+  }
+};
+
+module.exports = { obtenerUsuarios, obtenerUsuario, actualizarUsuario, eliminarUsuario, crearUsuario };

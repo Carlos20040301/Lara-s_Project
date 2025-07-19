@@ -41,8 +41,8 @@ const crearEmpleado = [
     const { id_usuario, cargo, telefono } = req.body;
     try {
       const usuario = await Usuario.findByPk(id_usuario);
-      if (!usuario || usuario.rol !== 'empleado') {
-        return res.status(400).json({ mensaje: 'Usuario no válido o no es empleado' });
+      if (!usuario || (usuario.rol !== 'empleado' && usuario.rol !== 'admin')) {
+        return res.status(400).json({ mensaje: 'Usuario no válido o no es empleado/admin' });
       }
       const empleado = await Empleado.create({ id_usuario, cargo, telefono });
       // Enviar correo de bienvenida

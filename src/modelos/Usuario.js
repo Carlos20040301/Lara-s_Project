@@ -9,9 +9,25 @@ const Usuario = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    nombre: {
+    primerNombre: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    segundoNombre: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    primerApellido: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    segundoApellido: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    genero: {
+      type: DataTypes.ENUM('M', 'F', 'O'),
+      allowNull: true,
     },
     correo: {
       type: DataTypes.STRING,

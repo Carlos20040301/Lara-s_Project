@@ -8,7 +8,7 @@ const path = require('path');
 const obtenerProductos = async (req, res) => {
   try {
     const { categoria_id, busqueda, stock_minimo, precio, precioMax, precioMin } = req.query;
-    const where = { activo: true };
+    const where = {};
 
     // Filtros
     if (categoria_id) {
@@ -99,7 +99,7 @@ const crearProducto = async (req, res) => {
 
     // Procesar imagen si se subió
     if (req.file) {
-      imagen = req.file.filename;
+      imagen = req.file.originalname;
     }
 
     // Validar que el código no esté duplicado
@@ -208,12 +208,12 @@ const actualizarProducto = async (req, res) => {
       // Eliminar imagen anterior si existe
       if (producto.imagen) {
         try {
-          await fs.unlink(path.join(__dirname, '../../uploads', producto.imagen));
+          await fs.unlink(path.join(__dirname, '../../', producto.imagen));
         } catch (error) {
           console.log('No se pudo eliminar la imagen anterior:', error.message);
         }
       }
-      imagen = req.file.filename;
+      imagen = req.file.originalname;
     }
 
     await producto.update({
@@ -225,6 +225,11 @@ const actualizarProducto = async (req, res) => {
       categoria_id: categoria_id || producto.categoria_id,
       imagen
     });
+
+    // Si el stock es mayor a 0, reactivar el producto
+    if (producto.stock > 0 && !producto.activo) {
+      await producto.update({ activo: true });
+    }
 
     // Obtener el producto actualizado con la categoría
     const productoActualizado = await Producto.findByPk(id, {
@@ -249,7 +254,7 @@ const actualizarProducto = async (req, res) => {
   }
 };
 
-// Eliminar producto (soft delete)
+// Eliminar producto (out of stock)
 const eliminarProducto = async (req, res) => {
   try {
     const { id } = req.params;
@@ -280,11 +285,11 @@ const eliminarProducto = async (req, res) => {
       });
     }
 
-    await producto.update({ activo: false });
+    await producto.update({ stock: 0, activo: false });
 
     res.json({
       success: true,
-      message: 'Producto eliminado exitosamente'
+      message: 'Producto marcado como fuera de stock y desactivado'
     });
   } catch (error) {
     console.error('Error al eliminar producto:', error);

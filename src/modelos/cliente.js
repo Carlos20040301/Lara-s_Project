@@ -30,14 +30,34 @@ const Cliente = sequelize.define(
             unique: true,
         },
         genero: {
-            type: DataTypes.ENUM('M', 'F'),
+            type: DataTypes.ENUM('M', 'F', 'O'),
             allowNull: true,
-        }
+        },
+        usuario_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        telefono: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+        email: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
+        },
+        direccion: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
     },
     {
         tableName: 'clientes',
         timestamps: true,
     }
 )
+
+// Relación: Cliente pertenece a Usuario
+const Usuario = require('./Usuario');
+Cliente.belongsTo(Usuario, { foreignKey: 'usuario_id' });
 
 module.exports = Cliente;

@@ -47,7 +47,22 @@ const iniciarSesion = [
         return res.status(401).json({ mensaje: 'Credenciales inválidas' });
       }
       const token = generarToken({ id: usuario.id, rol: usuario.rol });
-      res.json({ token, usuario: { id: usuario.id, nombre: usuario.nombre, correo, rol: usuario.rol } });
+      const nombreCompleto = [usuario.primerNombre, usuario.segundoNombre, usuario.primerApellido, usuario.segundoApellido]
+        .filter(Boolean)
+        .join(' ');
+      res.json({
+        token,
+        usuario: {
+          id: usuario.id,
+          nombre: nombreCompleto,
+          correo,
+          rol: usuario.rol,
+          primerNombre: usuario.primerNombre,
+          segundoNombre: usuario.segundoNombre,
+          primerApellido: usuario.primerApellido,
+          segundoApellido: usuario.segundoApellido
+        }
+      });
     } catch (error) {
       res.status(500).json({ mensaje: 'Error en el servidor', error });
     }

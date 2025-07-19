@@ -19,6 +19,8 @@ const Proveedor = require('./modelos/Proveedor.js');
 const Compra = require('./modelos/Compra.js');
 const CompraProducto = require('./modelos/CompraProducto.js');
 const Cliente = require('./modelos/Cliente.js');
+const RecuperacionPassword = require('./modelos/RecuperacionPassword.js');
+const sincronizarEmpleadosYClientes = require('./scripts/sincronizarEmpleadosYClientes');
 
 require('dotenv').config();
 
@@ -52,7 +54,12 @@ db.authenticate().then(async()=>{
     }).catch((er)=>{console.log(er);})
     await Cliente.sync().then(()=>{console.log("El modelo cliente se creo correctamente");
     }).catch((er)=>{console.log(er);})
+    await RecuperacionPassword.sync().then(()=>{console.log("El modelo recuperacion password se creo correctamente");
+    }).catch((er)=>{console.log(er);})
     console.log();
+
+    // Sincronizar empleados y clientes
+    await sincronizarEmpleadosYClientes();
     
     // Iniciar servidor
     const PUERTO = process.env.PUERTO || 3001;
@@ -70,6 +77,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/autenticacion', require('./rutas/rutaAutenticacion.js'));
+app.use('/api/auth', require('./rutas/rutaRecuperacionPassword.js'));
 app.use('/api/usuario', require('./rutas/rutaUsuario.js'));
 app.use('/api/empleado', require('./rutas/rutaEmpleado.js'));
 app.use('/api/categoria', require('./rutas/rutaCategoria.js'));

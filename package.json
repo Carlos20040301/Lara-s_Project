@@ -26,6 +26,7 @@
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.10",
+    "package.json": "^2.0.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "sequelize": "^6.37.7",
@@ -44,6 +45,7 @@
   },
   "homepage": "https://github.com/Carlos20040301/Lara-s_Project#readme",
   "devDependencies": {
+    "@types/styled-components": "^5.1.34",
     "jest": "^30.0.4",
     "supertest": "^7.1.3"
   }

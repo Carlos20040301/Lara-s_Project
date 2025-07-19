@@ -4,6 +4,7 @@ const controladorCliente = require('../controladores/controladorCliente');
 const Cliente = require('../modelos/Cliente');
 const { where } = require('sequelize');
 const router = express.Router();
+const { crearClienteYUsuario } = require('../controladores/controladorCliente');
 
 /**
  * @swagger
@@ -100,11 +101,11 @@ router.get('/listar', controladorCliente.listarClientes);
 router.post('/guardar',
 
     // Campos Obligatorios
-    body('primerNombre').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer nombre debe tener entre 5 y 50 caracteres'
+    body('primerNombre').isLength({ max: 50, min: 2 }).withMessage(
+        'El primer nombre debe tener entre 2 y 50 caracteres'
     ),
-    body('primerApellido').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer apellido debe tener entre 5 y 50 caracteres'
+    body('primerApellido').isLength({ max: 50, min: 2 }).withMessage(
+        'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
 
     // Campos Opcionales
@@ -127,9 +128,7 @@ router.post('/guardar',
     body('estado').optional().isIn(['activo', 'inactivo']).withMessage(
         'El estado debe ser "activo" o "inactivo"'
     ),
-    body('genero').optional().isIn(['M', 'F']).withMessage(
-        'El género debe ser "M" o "F"'
-    ),
+    body('genero').optional().isIn(['M', 'F', 'O']).withMessage('El género debe ser "M", "F" o "O"'),
     controladorCliente.guardarCliente
 )
 
@@ -196,11 +195,11 @@ router.put('/editar',
     }),
 
     // Campos Obligatorios
-    body('primerNombre').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer nombre debe tener entre 5 y 50 caracteres'
+    body('primerNombre').isLength({ max: 50, min: 2 }).withMessage(
+        'El primer nombre debe tener entre 2 y 50 caracteres'
     ),
-    body('primerApellido').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer apellido debe tener entre 5 y 50 caracteres'
+    body('primerApellido').isLength({ max: 50, min: 2 }).withMessage(
+        'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
 
     // Campos Opcionales
@@ -210,22 +209,21 @@ router.put('/editar',
     body('segundoApellido').optional().isLength({ max: 50, min: 5 }).withMessage(
         'El segundo apellido debe tener entre 5 y 50 caracteres'
     ),
-    body('rtn').optional().isLength({ max: 14, min: 14 }).withMessage(
+    body('rtn').optional({ checkFalsy: true }).isLength({ max: 14, min: 14 }).withMessage(
         'El RTN debe tener exactamente 14 caracteres'
-    ).custom(async (value) => {
+    ).custom(async (value, { req }) => {
         const buscarRTN = await Cliente.findOne({
             where: { rtn: value }
         });
-        if (buscarRTN) {
+        // Permitir el mismo RTN si pertenece al cliente que se está editando
+        if (buscarRTN && buscarRTN.id != req.query.id) {
             throw new Error('El RTN ya está registrado');
         }
     }),
     body('estado').optional().isIn(['activo', 'inactivo']).withMessage(
         'El estado debe ser "activo" o "inactivo"'
     ),
-    body('genero').optional().isIn(['M', 'F']).withMessage(
-        'El género debe ser "M" o "F"'
-    ),
+    body('genero').optional().isIn(['M', 'F', 'O']).withMessage('El género debe ser "M", "F" o "O"'),
     controladorCliente.editarCliente
 )
 
@@ -289,10 +287,10 @@ router.delete('/eliminar',
     body('estado').optional().isIn(['activo', 'inactivo']).withMessage(
         'El estado debe ser "activo" o "inactivo"'
     ),
-    body('genero').optional().isIn(['M', 'F']).withMessage(
-        'El género debe ser "M" o "F"'
-    ),
+    body('genero').optional().isIn(['M', 'F', 'O']).withMessage('El género debe ser "M", "F" o "O"'),
     controladorCliente.eliminarCliente
 )
+
+router.post('/crear-con-usuario', crearClienteYUsuario);
 
 module.exports = router;
