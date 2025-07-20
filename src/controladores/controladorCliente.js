@@ -110,7 +110,6 @@ exports.crearClienteYUsuario = async (req, res) => {
       direccion: req.body.direccion,
       estado: req.body.estado || 'activo'
     }, { transaction: t });
-
     // 2. Crear usuario usando los datos del cliente
     const nuevoUsuario = await Usuario.create({
       primerNombre: nuevoCliente.primerNombre,
@@ -122,10 +121,8 @@ exports.crearClienteYUsuario = async (req, res) => {
       contrasena: '123456', // mínimo 6 caracteres
       rol: 'cliente'
     }, { transaction: t });
-
     // 3. Actualizar cliente con el usuario_id
     await nuevoCliente.update({ usuario_id: nuevoUsuario.id }, { transaction: t });
-
     await t.commit();
     res.status(201).json({ cliente: nuevoCliente, usuario: nuevoUsuario });
   } catch (error) {

@@ -9,7 +9,16 @@ const registrar = [
     if (!errors.isEmpty()) {
       return res.status(400).json({ errores: errors.array() });
     }
-    const { nombre, correo, contrasena, rol } = req.body;
+    const {
+      primerNombre,
+      segundoNombre,
+      primerApellido,
+      segundoApellido,
+      genero,
+      correo,
+      contrasena,
+      rol,
+    } = req.body;
     try {
       const usuarioExistente = await Usuario.findOne({ where: { correo } });
       if (usuarioExistente) {
@@ -17,14 +26,26 @@ const registrar = [
       }
       const contrasenaHasheada = await argon2.hash(contrasena);
       const usuario = await Usuario.create({
-        nombre,
+        primerNombre,
+        segundoNombre,
+        primerApellido,
+        segundoApellido,
+        genero,
         correo,
         contrasena: contrasenaHasheada,
         rol,
       });
-      res.status(201).json({ mensaje: 'Usuario registrado exitosamente',usuario: { id: usuario.id, nombre, correo, rol }
+      res.status(201).json({
+        mensaje: 'Usuario registrado exitosamente',
+        usuario: {
+          id: usuario.id,
+          nombreCompleto: `${usuario.primerNombre} ${usuario.segundoNombre || ''} ${usuario.primerApellido || ''} ${usuario.segundoApellido || ''}`.trim(),
+          correo: usuario.correo,
+          rol: usuario.rol,
+        },
       });
     } catch (error) {
+      console.error('Error al registrar usuario:', error);
       res.status(500).json({ mensaje: 'Error en el servidor', error });
     }
   },

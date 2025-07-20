@@ -180,6 +180,7 @@
  *         description: Movimiento de inventario no encontrado
  */
 const express = require('express');
+const { body, query } = require('express-validator');
 const router = express.Router();
 const autenticacionMiddleware = require('../middlewares/middlewareAutenticacion');
 const {
@@ -190,13 +191,38 @@ const {
   eliminarInventario
 } = require('../controladores/controladorInventario');
 
-router.get('/', obtenerInventarios);
+router.get('/listar',  obtenerInventarios);
 
-router.get('/:id', obtenerInventario);
+router.get('/buscarRegistro',
+  query('id').isInt().withMessage('ID inválido'),
+  obtenerInventario);
 
 // Crear, actualizar y eliminar un nuevo movimiento de inventario - solo admin
-router.post('/', autenticacionMiddleware(['admin']), crearInventario);
-router.put('/:id', autenticacionMiddleware(['admin']), actualizarInventario);
-router.delete('/:id', autenticacionMiddleware(['admin']), eliminarInventario);
+router.post('/guardar', 
+  body('tipo').isIn(['entrada', 'salida', 'ajuste']).withMessage('Tipo inválido. Debe ser "entrada", "salida" o "ajuste"'),
+  body('origen').optional().isIn(['venta', 'compra', 'ajuste', 'devolucion', 'otro'])
+  .withMessage('Origen inválido. Debe ser "venta", "compra", "ajuste", "devolucion" o "otro"'),
+  body('cantidad').isInt({ min: 1 }).withMessage('Cantidad debe ser al menos 1'),
+  body('motivo').notEmpty().withMessage('Motivo requerido'),
+  body('referencia').optional().isString(),
+  body('producto_id').isInt().withMessage('ID de producto inválido'),
+  body('empleado_id').isInt().withMessage('ID de empleado inválido'),
+  autenticacionMiddleware(['admin']), crearInventario);
+
+router.put('/actualizar',
+  query('id').isInt().withMessage('ID inválido'),
+  body('tipo').isIn(['entrada', 'salida', 'ajuste']).withMessage('Tipo inválido. Debe ser "entrada", "salida" o "ajuste"'),
+  body('origen').optional().isIn(['venta', 'compra', 'ajuste', 'devolucion', 'otro'])
+  .withMessage('Origen inválido. Debe ser "venta", "compra", "ajuste", "devolucion" o "otro"'),
+  body('cantidad').isInt({ min: 1 }).withMessage('Cantidad debe ser al menos 1'),
+  body('motivo').notEmpty().withMessage('Motivo requerido'),
+  body('referencia').optional().isString(),
+  body('producto_id').isInt().withMessage('ID de producto inválido'),
+  body('empleado_id').isInt().withMessage('ID de empleado inválido'),
+  autenticacionMiddleware(['admin']), actualizarInventario)
+;
+router.delete('/eliminar',
+  query('id').isInt({ min: 1 }).withMessage('ID inválido'),
+  autenticacionMiddleware(['admin']), eliminarInventario);
 
 module.exports = router;

@@ -217,6 +217,7 @@
  *         description: Compra no encontrada
  */
 const express = require('express');
+const { body, query } = require('express-validator');
 const router = express.Router();
 const autenticacionMiddleware = require('../middlewares/middlewareAutenticacion');
 const {
@@ -227,13 +228,34 @@ const {
   eliminarCompra
 } = require('../controladores/controladorCompra');
 
-router.get('/', obtenerCompras);
+router.get('/listar', obtenerCompras);
 
-router.get('/:id', obtenerCompra);
+router.get('/buscarCompra',
+      query('id').isInt().withMessage('El ID debe ser un número entero'),
+  obtenerCompra);
 
 // Crear, actualizar y eliminar - solo admin
-router.post('/', autenticacionMiddleware(['admin']), crearCompra);
-router.put('/:id', autenticacionMiddleware(['admin']), actualizarCompra);
-router.delete('/:id', autenticacionMiddleware(['admin']), eliminarCompra);
+router.post('/guardar',
+  body('proveedor_id').isInt({ gt: 0 }).withMessage('El proveedor_id debe ser un número entero positivo'),
+  body('empleado_id').isInt({ gt: 0 }).withMessage('El empleado_id debe ser un número entero positivo'),
+  body('numero_factura').optional().isString().isLength({ max: 100 }).withMessage('La factura debe tener máximo 100 caracteres'),
+  body('fecha_compra').optional().isISO8601().withMessage('La fecha de compra debe ser una fecha válida'),
+  body('total').isDecimal({ decimal_digits: '0,2' }).withMessage('Total debe ser un número decimal con máximo 2 decimales'),
+  body('productos').isArray({ min: 1 }).withMessage('Debe proporcionar al menos un producto'),
+  body('productos.*.producto_id').isInt({ gt: 0 }).withMessage('producto_id debe ser un número entero positivo'),
+  body('productos.*.cantidad').isInt({ gt: 0 }).withMessage('La cantidad debe ser un número entero positivo'),
+  body('productos.*.precio_unitario').isDecimal({ decimal_digits: '0,2' }).withMessage('El precio unitario debe ser decimal con 2 decimales'),
+  autenticacionMiddleware(['admin']), crearCompra);
+
+router.put('/editar',
+    query('id').isInt().withMessage('ID inválido'),
+    body('proveedor_id').isInt().withMessage('Proveedor inválido'),
+    body('empleado_id').isInt().withMessage('Empleado inválido'),
+    body('productos').isArray({ min: 1 }).withMessage('Se requiere al menos un producto'),
+  autenticacionMiddleware(['admin']), actualizarCompra);
+
+router.delete('/eliminar',
+      query('id').isInt().withMessage('ID inválido'),
+  autenticacionMiddleware(['admin']), eliminarCompra);
 
 module.exports = router;

@@ -1,6 +1,8 @@
 const Categoria = require('../modelos/Categoria');
 const Producto = require('../modelos/Producto');
 const { Op } = require('sequelize');
+const fs = require('fs');
+const path = require('path');
 
 // Obtener todas las categorías
 const obtenerCategorias = async (req, res) => {
@@ -59,7 +61,7 @@ const crearCategoria = async (req, res) => {
     const { nombre, descripcion } = req.body;
     // Validar que el nombre no esté duplicado
     const categoriaExistente = await Categoria.findOne({
-      where: { 
+      where: {
         nombre: nombre,
         activo: true
       }
@@ -70,10 +72,18 @@ const crearCategoria = async (req, res) => {
         message: 'Ya existe una categoría con ese nombre'
       });
     }
+    // Crear la nueva categoría en la base de datos
     const nuevaCategoria = await Categoria.create({
       nombre,
       descripcion
     });
+    // Crear carpeta correspondiente en /uploads
+    const carpetaNombre = nombre.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const rutaCarpeta = path.join(__dirname, '..', '..', 'uploads', carpetaNombre);
+    if (!fs.existsSync(rutaCarpeta)) {
+      fs.mkdirSync(rutaCarpeta, { recursive: true });
+      console.log(`Carpeta creada para la categoría: ${carpetaNombre}`);
+    }
     res.status(201).json({
       success: true,
       message: 'Categoría creada exitosamente',

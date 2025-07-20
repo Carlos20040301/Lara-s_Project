@@ -1,4 +1,5 @@
 const express = require('express');
+const { body, query } = require('express-validator');
 const router = express.Router();
 const autenticacionMiddleware = require('../middlewares/middlewareAutenticacion');
 const {
@@ -172,13 +173,25 @@ const {
  *         description: Proveedor no encontrado
  */
 
-router.get('/', obtenerProveedores);
+router.get('/listar', obtenerProveedores);
 
-router.get('/:id', obtenerProveedor);
+router.get('/buscarProveedor',
+    query('id').isInt().withMessage('ID inválido'),
+  obtenerProveedor);
 
 // Crear, actualizar y eliminar - solo admin
-router.post('/', autenticacionMiddleware(['admin']), crearProveedor);
-router.put('/:id', autenticacionMiddleware(['admin']), actualizarProveedor);
-router.delete('/:id', autenticacionMiddleware(['admin']), eliminarProveedor);
+router.post('/guardar', 
+    body('nombre').notEmpty().withMessage('El nombre es obligatorio'),
+    body('correo').optional().isEmail().withMessage('Correo inválido'),
+  autenticacionMiddleware(['admin']), crearProveedor);
+
+router.put('/actualizar', 
+    query('id').isInt().withMessage('ID inválido'),
+    body('correo').optional().isEmail().withMessage('Correo inválido'),
+  autenticacionMiddleware(['admin']), actualizarProveedor);
+
+router.delete('/eliminar',
+    query('id').isInt().withMessage('ID inválido'),
+  autenticacionMiddleware(['admin']), eliminarProveedor);
 
 module.exports = router;

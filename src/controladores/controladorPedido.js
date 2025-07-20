@@ -2,30 +2,27 @@ const Venta = require('../modelos/Venta');
 const Facturacion = require('../modelos/Facturacion');
 const Producto = require('../modelos/Producto');
 const Caja = require('../modelos/Caja');
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const enviarEmail = require('../configuraciones/email');
+
 
 // Obtener todos los pedidos
 const obtenerPedidos = async (req, res) => {
   try {
     const { estado, fecha_inicio, fecha_fin, cliente_email } = req.query;
     const where = {};
-
     // Filtros
     if (estado) {
       where.estado = estado;
     }
-
     if (cliente_email) {
       where.cliente_email = { [Op.like]: `%${cliente_email}%` };
     }
-
     if (fecha_inicio && fecha_fin) {
       where.fecha_creacion = {
         [Op.between]: [new Date(fecha_inicio), new Date(fecha_fin)]
       };
     }
-
     const pedidos = await Venta.findAll({
       where,
       include: [{
@@ -39,7 +36,6 @@ const obtenerPedidos = async (req, res) => {
       }],
       order: [['fecha_creacion', 'DESC']]
     });
-
     res.json({
       success: true,
       data: pedidos
@@ -56,7 +52,7 @@ const obtenerPedidos = async (req, res) => {
 // Obtener un pedido por ID
 const obtenerPedidoPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const pedido = await Venta.findByPk(id, {
       include: [{
         model: Facturacion,
@@ -68,14 +64,12 @@ const obtenerPedidoPorId = async (req, res) => {
         }]
       }]
     });
-
     if (!pedido) {
       return res.status(404).json({
         success: false,
         message: 'Pedido no encontrado'
       });
     }
-
     res.json({
       success: true,
       data: pedido
@@ -91,6 +85,12 @@ const obtenerPedidoPorId = async (req, res) => {
 
 // Crear nuevo pedido
 const crearPedido = async (req, res) => {
+  if (!req.user?.id) {
+  return res.status(401).json({
+    success: false,
+    message: 'Empleado no autenticado o falta el ID en el token.'
+  });
+  }
   try {
     const {
       cliente_nombre,
@@ -101,7 +101,6 @@ const crearPedido = async (req, res) => {
       metodo_pago,
       notas
     } = req.body;
-
     // Validar productos
     if (!productos || !Array.isArray(productos) || productos.length === 0) {
       return res.status(400).json({
@@ -109,11 +108,9 @@ const crearPedido = async (req, res) => {
         message: 'Debe incluir al menos un producto'
       });
     }
-
     // Verificar stock y calcular totales
     let subtotal = 0;
     const detallesProductos = [];
-
     for (const item of productos) {
       const producto = await Producto.findByPk(item.producto_id);
       if (!producto || !producto.activo) {
@@ -122,22 +119,18 @@ const crearPedido = async (req, res) => {
           message: `Producto ${item.producto_id} no encontrado o inactivo`
         });
       }
-
       if (producto.stock < item.cantidad) {
         return res.status(400).json({
           success: false,
           message: `Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock}`
         });
       }
-
       const precioUnitario = parseFloat(producto.precio);
       const cantidad = parseInt(item.cantidad);
       const descuento = parseFloat(item.descuento || 0);
       const subtotalItem = precioUnitario * cantidad;
       const totalItem = subtotalItem - descuento;
-
       subtotal += totalItem;
-
       detallesProductos.push({
         producto,
         cantidad,
@@ -147,15 +140,12 @@ const crearPedido = async (req, res) => {
         total: totalItem
       });
     }
-
     // Calcular impuestos y total
     const impuesto = subtotal * 0.16; // 16% IVA
     const total = subtotal + impuesto;
-
     // Generar número de pedido único
     const { nanoid } = await import('nanoid');
     const numeroPedido = `PED-${nanoid(8).toUpperCase()}`;
-
     // Crear la venta
     const nuevaVenta = await Venta.create({
       numero_pedido: numeroPedido,
@@ -170,7 +160,6 @@ const crearPedido = async (req, res) => {
       notas,
       empleado_id: req.user?.id || null
     });
-
     // Crear detalles de facturación y actualizar stock
     for (const detalle of detallesProductos) {
       await Facturacion.create({
@@ -182,13 +171,11 @@ const crearPedido = async (req, res) => {
         descuento: detalle.descuento,
         total: detalle.total
       });
-
       // Actualizar stock del producto
       await detalle.producto.update({
         stock: detalle.producto.stock - detalle.cantidad
       });
     }
-
     // Registrar ingreso en caja
     await Caja.create({
       tipo: 'ingreso',
@@ -199,7 +186,6 @@ const crearPedido = async (req, res) => {
       venta_id: nuevaVenta.id,
       empleado_id: req.user?.id || null
     });
-
     // Enviar email al cliente
     try {
       await enviarEmail({
@@ -217,7 +203,6 @@ const crearPedido = async (req, res) => {
     } catch (emailError) {
       console.error('Error al enviar email:', emailError);
     }
-
     // Obtener el pedido completo
     const pedidoCompleto = await Venta.findByPk(nuevaVenta.id, {
       include: [{
@@ -230,7 +215,6 @@ const crearPedido = async (req, res) => {
         }]
       }]
     });
-
     res.status(201).json({
       success: true,
       message: 'Pedido creado exitosamente',
@@ -248,9 +232,8 @@ const crearPedido = async (req, res) => {
 // Actualizar estado del pedido
 const actualizarEstadoPedido = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const { estado } = req.body;
-
     const pedido = await Venta.findByPk(id);
     if (!pedido) {
       return res.status(404).json({
@@ -258,7 +241,6 @@ const actualizarEstadoPedido = async (req, res) => {
         message: 'Pedido no encontrado'
       });
     }
-
     const estadosValidos = ['pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado'];
     if (!estadosValidos.includes(estado)) {
       return res.status(400).json({
@@ -266,9 +248,7 @@ const actualizarEstadoPedido = async (req, res) => {
         message: 'Estado no válido'
       });
     }
-
     await pedido.update({ estado });
-
     // Si se cancela el pedido, restaurar stock
     if (estado === 'cancelado' && pedido.estado !== 'cancelado') {
       const detalles = await Facturacion.findAll({
@@ -278,14 +258,12 @@ const actualizarEstadoPedido = async (req, res) => {
           as: 'producto'
         }]
       });
-
       for (const detalle of detalles) {
         await detalle.producto.update({
           stock: detalle.producto.stock + detalle.cantidad
         });
       }
     }
-
     res.json({
       success: true,
       message: 'Estado del pedido actualizado exitosamente',
@@ -303,8 +281,7 @@ const actualizarEstadoPedido = async (req, res) => {
 // Eliminar pedido (solo si está cancelado)
 const eliminarPedido = async (req, res) => {
   try {
-    const { id } = req.params;
-
+    const { id } = req.query;
     const pedido = await Venta.findByPk(id);
     if (!pedido) {
       return res.status(404).json({
@@ -312,27 +289,22 @@ const eliminarPedido = async (req, res) => {
         message: 'Pedido no encontrado'
       });
     }
-
     if (pedido.estado !== 'cancelado') {
       return res.status(400).json({
         success: false,
         message: 'Solo se pueden eliminar pedidos cancelados'
       });
     }
-
     // Eliminar detalles de facturación
     await Facturacion.destroy({
       where: { venta_id: id }
     });
-
     // Eliminar movimientos de caja
     await Caja.destroy({
       where: { venta_id: id }
     });
-
     // Eliminar la venta
     await pedido.destroy();
-
     res.json({
       success: true,
       message: 'Pedido eliminado exitosamente'
@@ -346,10 +318,48 @@ const eliminarPedido = async (req, res) => {
   }
 };
 
+// Obtener el reporte de las ventas de determinada fecha
+const ReporteVentas = async (req, res) => {
+  try {
+    const { desde, hasta } = req.query;
+    if (!desde || !hasta) {
+      return res.status(400).json({
+        success: false,
+        message: 'Las fechas "desde" y "hasta" son requeridas'
+      });
+    }
+    const ventas = await Venta.findAll({
+      where: {
+        fecha_creacion: {
+          [Op.between]: [new Date(desde), new Date(hasta)]
+        }
+      },
+      attributes: [
+        [fn('DATE', col('fecha_creacion')), 'fecha'],
+        [fn('SUM', col('total')), 'total_ventas'],
+        [fn('COUNT', col('id')), 'total_pedidos']
+      ],
+      group: [fn('DATE', col('fecha_creacion'))]
+    });
+    res.json({
+      success: true,
+      message: 'Reporte generado correctamente',
+      data: ventas
+    });
+  } catch (error) {
+    console.error('Error al generar el reporte:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
 module.exports = {
   obtenerPedidos,
   obtenerPedidoPorId,
   crearPedido,
   actualizarEstadoPedido,
-  eliminarPedido
+  eliminarPedido,
+  ReporteVentas
 }; 

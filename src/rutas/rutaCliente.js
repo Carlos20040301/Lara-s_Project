@@ -2,9 +2,11 @@ const express = require('express');
 const { body, query } = require('express-validator');
 const controladorCliente = require('../controladores/controladorCliente');
 const Cliente = require('../modelos/Cliente');
+const Usuario = require('../modelos/Usuario');
 const { where } = require('sequelize');
 const router = express.Router();
 const { crearClienteYUsuario } = require('../controladores/controladorCliente');
+const validarCampos = require('../middlewares/validationMiddleware');
 
 /**
  * @swagger
@@ -99,7 +101,6 @@ router.get('/listar', controladorCliente.listarClientes);
  *     description: Error al guardar los clientes
  */
 router.post('/guardar',
-
     // Campos Obligatorios
     body('primerNombre').isLength({ max: 50, min: 2 }).withMessage(
         'El primer nombre debe tener entre 2 y 50 caracteres'
@@ -107,7 +108,6 @@ router.post('/guardar',
     body('primerApellido').isLength({ max: 50, min: 2 }).withMessage(
         'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
-
     // Campos Opcionales
     body('segundoNombre').optional().isLength({ max: 50, min: 5 }).withMessage(
         'El segundo nombre debe tener entre 5 y 50 caracteres'
@@ -182,7 +182,6 @@ router.post('/guardar',
  *         description: Error al actualizar el cliente
  */
 router.put('/editar',
-
     // Validación de ID
     query('id').isInt().withMessage('El ID debe ser un número entero')
     .custom(async (value) => {
@@ -193,7 +192,6 @@ router.put('/editar',
             throw new Error('Cliente no encontrado o no existe');
         }
     }),
-
     // Campos Obligatorios
     body('primerNombre').isLength({ max: 50, min: 2 }).withMessage(
         'El primer nombre debe tener entre 2 y 50 caracteres'
@@ -201,7 +199,6 @@ router.put('/editar',
     body('primerApellido').isLength({ max: 50, min: 2 }).withMessage(
         'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
-
     // Campos Opcionales
     body('segundoNombre').optional().isLength({ max: 50, min: 5 }).withMessage(
         'El segundo nombre debe tener entre 5 y 50 caracteres'
@@ -247,7 +244,6 @@ router.put('/editar',
  *         description: Error al eliminar el cliente
  */
 router.delete('/eliminar',
-
     // Validación de ID
     query('id').isInt().withMessage('El ID debe ser un número entero')
     .custom(async (value) => {
@@ -258,39 +254,36 @@ router.delete('/eliminar',
             throw new Error('Cliente no encontrado o no existe');
         }
     }),
-
-    // Campos Obligatorios
-    body('primerNombre').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer nombre debe tener entre 5 y 50 caracteres'
-    ),
-    body('primerApellido').isLength({ max: 50, min: 5 }).withMessage(
-        'El primer apellido debe tener entre 5 y 50 caracteres'
-    ),
-
-    // Campos Opcionales
-    body('segundoNombre').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo nombre debe tener entre 5 y 50 caracteres'
-    ),
-    body('segundoApellido').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo apellido debe tener entre 5 y 50 caracteres'
-    ),
-    body('rtn').optional().isLength({ max: 14, min: 14 }).withMessage(
-        'El RTN debe tener exactamente 14 caracteres'
-    ).custom(async (value) => {
-        const buscarRTN = await Cliente.findOne({
-            where: { rtn: value }
-        });
-        if (buscarRTN) {
-            throw new Error('El RTN ya está registrado');
-        }
-    }),
-    body('estado').optional().isIn(['activo', 'inactivo']).withMessage(
-        'El estado debe ser "activo" o "inactivo"'
-    ),
-    body('genero').optional().isIn(['M', 'F', 'O']).withMessage('El género debe ser "M", "F" o "O"'),
+    validarCampos,
     controladorCliente.eliminarCliente
 )
 
-router.post('/crear-con-usuario', crearClienteYUsuario);
+router.post('/crear-con-usuario',
+    body('primerNombre').isLength({ min: 2, max: 50 }).withMessage('El primer nombre debe tener entre 2 y 50 caracteres'),
+    body('primerApellido').isLength({ min: 2, max: 50 }).withMessage('El primer apellido debe tener entre 2 y 50 caracteres'),
+    body('segundoNombre').optional().isLength({ min: 5, max: 50 }).withMessage('El segundo nombre debe tener entre 5 y 50 caracteres'),
+    body('segundoApellido').optional().isLength({ min: 5, max: 50 }).withMessage('El segundo apellido debe tener entre 5 y 50 caracteres'),
+    body('rtn').isLength({ min: 14, max: 14 }).withMessage('El RTN debe tener exactamente 14 caracteres')
+      .custom(async (value) => {
+        const clienteExistente = await Cliente.findOne({ where: { rtn: value } });
+        if (clienteExistente) {
+          throw new Error('El RTN ya está registrado');
+        }
+      }),
+    body('email').isEmail().withMessage('Debe ser un correo válido')
+    .custom(async (correo) => {
+    const existeEnCliente = await Cliente.findOne({ where: { email: correo } });
+    const existeEnUsuario = await Usuario.findOne({ where: { correo } });
+    if (existeEnCliente || existeEnUsuario) {
+        throw new Error('El correo ya está registrado en el sistema');
+    }
+    }),
+    body('genero').isIn(['M', 'F', 'O']).withMessage('El género debe ser "M", "F" o "O"'),
+    body('telefono').notEmpty().withMessage('El teléfono es obligatorio'),
+    body('email').isEmail().withMessage('Debe ser un correo válido'),
+    body('direccion').notEmpty().withMessage('La dirección es obligatoria'),
+    body('estado').optional().isIn(['activo', 'inactivo']).withMessage('El estado debe ser "activo" o "inactivo"'),
+    validarCampos,
+    crearClienteYUsuario);
 
 module.exports = router;

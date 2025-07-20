@@ -13,15 +13,26 @@ const Inventario = sequelize.define('Inventario', {
     type: DataTypes.ENUM('entrada', 'salida', 'ajuste'),
     allowNull: false
   },
+  origen: {
+    type: DataTypes.ENUM('venta', 'compra', 'ajuste', 'devolucion', 'otro'),
+    allowNull: false,
+    defaultValue: 'otro'
+  },
   cantidad: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    validate: {
-      min: 1
-    }
+    validate: { min: 1 }
   },
   motivo: {
     type: DataTypes.STRING(200),
+    allowNull: false
+  },
+  referencia: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  stock_actual: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   producto_id: {
@@ -34,7 +45,7 @@ const Inventario = sequelize.define('Inventario', {
   },
   empleado_id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull: false,
     references: {
       model: 'empleados',
       key: 'id'
@@ -46,6 +57,7 @@ const Inventario = sequelize.define('Inventario', {
   createdAt: 'fecha_creacion',
   updatedAt: 'fecha_actualizacion'
 });
+
 
 Inventario.belongsTo(Producto, { foreignKey: 'producto_id', as: 'producto' });
 Producto.hasMany(Inventario, { foreignKey: 'producto_id', as: 'movimientos_inventario' });

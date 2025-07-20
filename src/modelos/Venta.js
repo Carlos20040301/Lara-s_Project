@@ -62,7 +62,7 @@ const Venta = sequelize.define('Venta', {
       min: 0
     }
   },
-  estado: {
+    estado: {
     type: DataTypes.ENUM('pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado'),
     allowNull: false,
     defaultValue: 'pendiente'

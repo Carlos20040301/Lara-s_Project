@@ -10,7 +10,7 @@ const autenticacionMiddleware = (roles = []) => {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = verificarToken(token);
-      req.usuario = decoded;
+      req.user = decoded;
 
       if (roles.length && !roles.includes(decoded.rol)) {
         return res.status(403).json({ mensaje: 'Usuario no autorizado' });

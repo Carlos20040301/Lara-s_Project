@@ -13,7 +13,6 @@ const Categoria = require('./modelos/Categoria.js');
 const Producto = require('./modelos/Producto.js');
 const Facturacion = require('./modelos/Facturacion.js');
 const Caja = require('./modelos/Caja.js');
-const ReporteVenta = require('./modelos/ReporteVenta.js');
 const Inventario = require('./modelos/Inventario.js');
 const Proveedor = require('./modelos/Proveedor.js');
 const Compra = require('./modelos/Compra.js');
@@ -41,8 +40,6 @@ db.authenticate().then(async()=>{
     await Facturacion.sync().then(()=>{console.log("El modelo facturacion se creo correctamente");
     }).catch((er)=>{console.log(er);})
     await Caja.sync().then(()=>{console.log("El modelo caja se creo correctamente");
-    }).catch((er)=>{console.log(er);})
-    await ReporteVenta.sync().then(()=>{console.log("El modelo reporte venta se creo correctamente");
     }).catch((er)=>{console.log(er);})
     await Inventario.sync().then(()=>{console.log("El modelo inventario se creo correctamente");
     }).catch((er)=>{console.log(er);})
@@ -74,20 +71,20 @@ db.authenticate().then(async()=>{
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Rutas
-app.use('/api/autenticacion', require('./rutas/rutaAutenticacion.js'));
-app.use('/api/auth', require('./rutas/rutaRecuperacionPassword.js'));
-app.use('/api/usuario', require('./rutas/rutaUsuario.js'));
-app.use('/api/empleado', require('./rutas/rutaEmpleado.js'));
-app.use('/api/categoria', require('./rutas/rutaCategoria.js'));
-app.use('/api/producto', require('./rutas/rutaProducto.js'));
+app.use('/api/autenticacion', require('./rutas/rutaAutenticacion.js')); //
+app.use('/api/auth', require('./rutas/rutaRecuperacionPassword.js')); //
+app.use('/api/usuario', require('./rutas/rutaUsuario.js')); //
+app.use('/api/empleado', require('./rutas/rutaEmpleado.js')); //
+app.use('/api/categoria', require('./rutas/rutaCategoria.js')); //
+app.use('/api/producto', require('./rutas/rutaProducto.js')); //
 app.use('/api/pedido', require('./rutas/rutaPedido.js'));
 app.use('/api/caja', require('./rutas/rutaCaja.js'));
 app.use('/api/cliente', require('./rutas/rutaCliente.js'));
-app.use('/api/reporteVenta', require('./rutas/rutaReporteVenta.js'));
 app.use('/api/proveedor', require('./rutas/rutaProveedor.js'));
-app.use('/api/compraProducto', require('./rutas/rutaCompraProducto.js'));
 app.use('/api/compra', require('./rutas/rutaCompra.js'));
 app.use('/api/inventario', require('./rutas/rutaInventario.js'));
 

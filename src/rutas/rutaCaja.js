@@ -239,31 +239,72 @@
  *         description: Movimiento no encontrado
  */
 const express = require('express');
+const { body, query } = require('express-validator');
 const router = express.Router();
 const controladorCaja = require('../controladores/controladorCaja');
 const middlewareAutenticacion = require('../middlewares/middlewareAutenticacion');
+const validarCampos = require('../middlewares/validationMiddleware');
 
 // Todas las rutas protegidas (solo empleados y admins)
 router.use(middlewareAutenticacion(['admin']));
 
 // Rutas de lectura
-router.get('/', controladorCaja.obtenerMovimientos);
-router.get('/resumen', controladorCaja.obtenerResumenCaja);
-router.get('/:id', controladorCaja.obtenerMovimientoPorId);
+router.get('/listar', controladorCaja.obtenerMovimientos);
+
+router.get('/resumen', 
+    query('fecha_inicio').optional().isISO8601().withMessage('La fecha de inicio debe tener un formato válido (YYYY-MM-DD)'),
+    query('fecha_fin').optional().isISO8601().withMessage('La fecha de fin debe tener un formato válido (YYYY-MM-DD)'),
+    query('fecha_fin').custom((value, { req }) => {
+      if (req.query.fecha_inicio && value) {
+        const inicio = new Date(req.query.fecha_inicio);
+        const fin = new Date(value);
+        if (fin < inicio) {
+          throw new Error('La fecha de fin no puede ser anterior a la fecha de inicio');
+        }
+      }return true;}),
+      validarCampos,
+  controladorCaja.obtenerResumenCaja);
+
+router.get('/buscarMovimiento',
+    query('id').isInt().withMessage('El ID de caja debe ser un número entero positivo y es requerido.'),
+    validarCampos,
+  controladorCaja.obtenerMovimientoPorId);
 
 // Rutas de escritura (solo admins)
-router.post('/',
-  middlewareAutenticacion(['admin']),
+router.post('/guardar',
+    body('tipo').notEmpty().withMessage('El tipo es requerido').isIn(['ingreso', 'egreso']).withMessage('El tipo debe ser "ingreso" o "egreso"'),
+    body('concepto').notEmpty().withMessage('El concepto es requerido').isLength({ max: 255 }).withMessage('El concepto no debe exceder 255 caracteres'),
+    body('monto').notEmpty().withMessage('El monto es requerido').isFloat({ gt: 0 }).withMessage('El monto debe ser un número mayor a 0'),
+    body('metodo_pago').optional().isIn(['efectivo', 'tarjeta', 'transferencia', 'paypal'])
+    .withMessage('Método de pago no válido. Debe ser uno de: efectivo, tarjeta, transferencia, paypal'),
+    body('referencia').optional().isLength({ max: 100 }).withMessage('La referencia no debe exceder 100 caracteres'),
+    body('venta_id').optional().isInt({ min: 1 }).withMessage('El ID de venta debe ser un número entero positivo'),
+    body('notas').optional().isLength({ max: 500 }).withMessage('Las notas no deben exceder 500 caracteres'),
+    validarCampos,
   controladorCaja.crearMovimiento
 );
 
-router.put('/:id',
-  middlewareAutenticacion(['admin']),
+router.put('/actualizar',
+    query('id').isInt().withMessage('El ID de caja debe ser un número entero positivo y es requerido.'),
+    body('tipo').custom((value, { req }) => {
+        if (value) {
+          throw new Error('No se puede cambiar el tipo de movimiento');
+        }
+        return true;
+      }),
+    body('concepto').optional().isLength({ max: 255 }).withMessage('El concepto no debe exceder 255 caracteres'),
+    body('monto').optional().isFloat({ gt: 0 }).withMessage('El monto debe ser un número mayor a 0'),
+    body('metodo_pago').optional().isIn(['efectivo', 'tarjeta', 'transferencia', 'paypal'])
+    .withMessage('Método de pago no válido. Debe ser uno de: efectivo, tarjeta, transferencia, paypal'),
+    body('referencia').optional().isLength({ max: 100 }).withMessage('La referencia no debe exceder 100 caracteres'),
+    body('notas').optional().isLength({ max: 500 }).withMessage('Las notas no deben exceder 500 caracteres'),
+    validarCampos,
   controladorCaja.actualizarMovimiento
 );
 
-router.delete('/:id',
-  middlewareAutenticacion(['admin']),
+router.delete('/eliminar',
+  query('id').isInt().withMessage('El ID de caja debe ser un número entero positivo y es requerido.'),
+  validarCampos,
   controladorCaja.eliminarMovimiento
 );
 

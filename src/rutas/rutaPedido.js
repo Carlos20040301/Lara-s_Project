@@ -219,27 +219,75 @@
  *         description: Pedido no encontrado
  */
 const express = require('express');
+const { body, query } = require('express-validator');
 const router = express.Router();
 const controladorPedido = require('../controladores/controladorPedido');
 const middlewareAutenticacion = require('../middlewares/middlewareAutenticacion');
+const validarCampos = require('../middlewares/validationMiddleware');
 
 // Rutas protegidas (empleados y admins)
 //router.get('/', middlewareAutenticacion.verificarToken, controladorPedido.obtenerPedidos);
 //router.get('/:id', middlewareAutenticacion.verificarToken, controladorPedido.obtenerPedidoPorId);
-router.get('/', middlewareAutenticacion(['empleado', 'admin']), controladorPedido.obtenerPedidos);
-router.get('/:id', middlewareAutenticacion(['empleado', 'admin']), controladorPedido.obtenerPedidoPorId);
+router.get('/listar', middlewareAutenticacion(['empleado', 'admin']), controladorPedido.obtenerPedidos);
+
+router.get('/buscarPedido', 
+    query('id').isInt().withMessage('El ID de la venta debe ser un número entero positivo y es requerido.'),
+    validarCampos,
+    middlewareAutenticacion(['empleado', 'admin']), controladorPedido.obtenerPedidoPorId);
 
 // Crear pedido (público para clientes, pero con validación)
 //router.post('/', controladorPedido.crearPedido);
-router.post('/', middlewareAutenticacion(['cliente', 'empleado', 'admin']), 
+router.post('/guardar',
+    body('cliente_nombre')
+        .trim().notEmpty().withMessage('El nombre del cliente es requerido.'),
+    body('cliente_email')
+        .trim().notEmpty().withMessage('El correo es requerido.')
+        .isEmail().withMessage('El correo no es válido.'),
+    body('cliente_telefono')
+        .notEmpty().withMessage('El teléfono es requerido.')
+        .matches(/^\d{10}$/).withMessage('El teléfono debe tener 10 dígitos.'),
+    body('direccion_entrega')
+        .trim().notEmpty().withMessage('La dirección de entrega es requerida.'),
+    body('metodo_pago')
+        .notEmpty().withMessage('El método de pago es requerido.')
+        .isIn(['tarjeta', 'efectivo', 'transferencia']).withMessage('Método de pago inválido.'),
+    body('notas')
+        .optional({ checkFalsy: true })
+        .isString().withMessage('Las notas deben ser texto.'),
+    body('productos')
+        .isArray({ min: 1 }).withMessage('Se requiere al menos un producto.'),
+    body('productos.*.producto_id')
+        .isInt({ min: 1 }).withMessage('Cada producto debe tener un ID válido.'),
+    body('productos.*.cantidad')
+        .isInt({ min: 1 }).withMessage('La cantidad debe ser al menos 1.'),
+    body('productos.*.descuento')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('El descuento debe ser un número positivo.'),
+        validarCampos,
+    middlewareAutenticacion(['cliente', 'empleado', 'admin']), 
 controladorPedido.crearPedido);
 
 // Rutas solo para empleados/admins
-router.patch('/:id/estado', middlewareAutenticacion(['empleado', 'admin']), 
+router.patch('/actualizarEstado', 
+    query('id').isInt().withMessage('El ID de la venta debe ser un número entero positivo y es requerido.'),
+    body('estado').isIn(['pendiente', 'confirmado', 'en_proceso', 'enviado', 'entregado', 'cancelado'])
+    .withMessage('Estado inválido. Solo puede ingresar: pendiente, confirmado, en_proceso, enviado, entregado o cancelado.'),
+    validarCampos,
+    middlewareAutenticacion(['empleado', 'admin']), 
 controladorPedido.actualizarEstadoPedido);
 
 
-router.delete('/:id', middlewareAutenticacion(['admin']), 
+router.delete('/eliminar',
+    query('id').isInt().withMessage('El ID de la venta debe ser un número entero positivo y es requerido.'),
+    validarCampos,
+    middlewareAutenticacion(['admin']), 
 controladorPedido.eliminarPedido);
+
+router.get('/reporteVentas',
+  query('desde').isISO8601().withMessage('La fecha "desde" es requerida y debe tener formato ISO (YYYY-MM-DD)'),
+  query('hasta').isISO8601().withMessage('La fecha "hasta" es requerida y debe tener formato ISO (YYYY-MM-DD)'),
+  validarCampos,
+  middlewareAutenticacion(['empleado', 'admin']),
+  controladorPedido.ReporteVentas);
 
 module.exports = router;

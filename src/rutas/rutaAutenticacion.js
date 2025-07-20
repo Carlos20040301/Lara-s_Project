@@ -126,12 +126,17 @@ const router = express.Router();
 const { body } = require('express-validator');
 const { registrar, iniciarSesion } = require('../controladores/controladorAutenticacion');
 
-router.post('/registro', 
-      body('nombre').notEmpty().withMessage('El nombre es requerido'),
-      body('correo').isEmail().withMessage('Correo inválido'),
-      body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
-      body('rol').isIn(['admin', 'empleado', 'cliente']).withMessage('Rol inválido. Solo puede ser admin, empleado o cliente'),
-    registrar);
+router.post('/registro',
+  body('primerNombre').notEmpty().withMessage('El primer nombre es requerido'),
+  body('segundoNombre').optional().isString().withMessage('El segundo nombre debe ser una cadena'),
+  body('primerApellido').optional().isString().withMessage('El primer apellido debe ser una cadena'),
+  body('segundoApellido').optional().isString().withMessage('El segundo apellido debe ser una cadena'),
+  body('genero').optional().isIn(['M', 'F', 'O']).withMessage('El género debe ser M, F u O'),
+  body('correo').isEmail().withMessage('Correo inválido'),
+  body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('rol').isIn(['admin', 'empleado', 'cliente']).withMessage('Rol inválido. Solo puede ser admin, empleado o cliente'),
+  registrar
+);
 
 router.post('/iniciar-sesion', 
       body('correo').isEmail().withMessage('Correo inválido'),

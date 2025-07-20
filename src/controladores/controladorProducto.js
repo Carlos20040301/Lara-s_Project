@@ -1,3 +1,4 @@
+
 const Producto = require('../modelos/Producto');
 const Categoria = require('../modelos/Categoria');
 const { Op } = require('sequelize');
@@ -9,12 +10,10 @@ const obtenerProductos = async (req, res) => {
   try {
     const { categoria_id, busqueda, stock_minimo, precio, precioMax, precioMin } = req.query;
     const where = {};
-
     // Filtros
     if (categoria_id) {
       where.categoria_id = categoria_id;
     }
-
     if (busqueda) {
       where[Op.or] = [
         { nombre: { [Op.like]: `%${busqueda}%` } },
@@ -22,11 +21,9 @@ const obtenerProductos = async (req, res) => {
         { descripcion: { [Op.like]: `%${busqueda}%` } }
       ];
     }
-
     if (stock_minimo) {
       where.stock = { [Op.gte]: parseInt(stock_minimo) };
     }
-
     if (precio) {
       where.precio = precio;
     } else {
@@ -45,7 +42,6 @@ const obtenerProductos = async (req, res) => {
       }],
       order: [['nombre', 'ASC']]
     });
-
     res.json({
       success: true,
       data: productos
@@ -62,7 +58,7 @@ const obtenerProductos = async (req, res) => {
 // Obtener un producto por ID
 const obtenerProductoPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const producto = await Producto.findByPk(id, {
       include: [{
         model: Categoria,
@@ -70,14 +66,12 @@ const obtenerProductoPorId = async (req, res) => {
         attributes: ['id', 'nombre', 'descripcion']
       }]
     });
-
     if (!producto) {
       return res.status(404).json({
         success: false,
         message: 'Producto no encontrado'
       });
     }
-
     res.json({
       success: true,
       data: producto
@@ -96,12 +90,6 @@ const crearProducto = async (req, res) => {
   try {
     const { codigo, nombre, descripcion, precio, stock, categoria_id } = req.body;
     let imagen = null;
-
-    // Procesar imagen si se subió
-    if (req.file) {
-      imagen = req.file.originalname;
-    }
-
     // Validar que el código no esté duplicado
     const productoExistente = await Producto.findOne({
       where: { 
@@ -109,14 +97,12 @@ const crearProducto = async (req, res) => {
         activo: true
       }
     });
-
     if (productoExistente) {
       return res.status(400).json({
         success: false,
         message: 'Ya existe un producto con ese código'
       });
     }
-
     // Verificar que la categoría existe
     const categoria = await Categoria.findByPk(categoria_id);
     if (!categoria || !categoria.activo) {
@@ -125,7 +111,11 @@ const crearProducto = async (req, res) => {
         message: 'Categoría no válida'
       });
     }
-
+    // Procesar imagen si se subió
+    if (req.file) {
+      const categoriaNombre = categoria.nombre.toLowerCase().replace(/\s+/g, '-');
+      imagen = `uploads/productos/${categoriaNombre}/${req.file.filename}`;
+    }
     const nuevoProducto = await Producto.create({
       codigo,
       nombre,
@@ -135,7 +125,6 @@ const crearProducto = async (req, res) => {
       categoria_id,
       imagen
     });
-
     // Obtener el producto con la categoría
     const productoCompleto = await Producto.findByPk(nuevoProducto.id, {
       include: [{
@@ -144,7 +133,6 @@ const crearProducto = async (req, res) => {
         attributes: ['id', 'nombre']
       }]
     });
-
     res.status(201).json({
       success: true,
       message: 'Producto creado exitosamente',
@@ -162,9 +150,8 @@ const crearProducto = async (req, res) => {
 // Actualizar producto
 const actualizarProducto = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const { codigo, nombre, descripcion, precio, stock, categoria_id } = req.body;
-
     const producto = await Producto.findByPk(id);
     if (!producto) {
       return res.status(404).json({
@@ -172,7 +159,6 @@ const actualizarProducto = async (req, res) => {
         message: 'Producto no encontrado'
       });
     }
-
     // Validar que el código no esté duplicado (excluyendo el producto actual)
     if (codigo && codigo !== producto.codigo) {
       const productoExistente = await Producto.findOne({
@@ -182,7 +168,6 @@ const actualizarProducto = async (req, res) => {
           id: { [Op.ne]: id }
         }
       });
-
       if (productoExistente) {
         return res.status(400).json({
           success: false,
@@ -190,7 +175,6 @@ const actualizarProducto = async (req, res) => {
         });
       }
     }
-
     // Verificar que la categoría existe (si se está cambiando)
     if (categoria_id && categoria_id !== producto.categoria_id) {
       const categoria = await Categoria.findByPk(categoria_id);
@@ -201,21 +185,23 @@ const actualizarProducto = async (req, res) => {
         });
       }
     }
-
     // Procesar nueva imagen si se subió
     let imagen = producto.imagen;
     if (req.file) {
       // Eliminar imagen anterior si existe
       if (producto.imagen) {
         try {
-          await fs.unlink(path.join(__dirname, '../../', producto.imagen));
+          const pathImagenAnterior = path.join(__dirname, '../../', producto.imagen);
+          await fs.unlink(pathImagenAnterior);
         } catch (error) {
           console.log('No se pudo eliminar la imagen anterior:', error.message);
         }
       }
-      imagen = req.file.originalname;
+      // Guardar nueva ruta de imagen
+      const categoria = await Categoria.findByPk(producto.categoria_id); // para recuperar el nombre
+      const categoriaNombre = categoria.nombre.toLowerCase().replace(/\s+/g, '-');
+      imagen = `uploads/productos/${categoriaNombre}/${req.file.filename}`;
     }
-
     await producto.update({
       codigo: codigo || producto.codigo,
       nombre: nombre || producto.nombre,
@@ -225,12 +211,10 @@ const actualizarProducto = async (req, res) => {
       categoria_id: categoria_id || producto.categoria_id,
       imagen
     });
-
     // Si el stock es mayor a 0, reactivar el producto
     if (producto.stock > 0 && !producto.activo) {
       await producto.update({ activo: true });
     }
-
     // Obtener el producto actualizado con la categoría
     const productoActualizado = await Producto.findByPk(id, {
       include: [{
@@ -239,7 +223,6 @@ const actualizarProducto = async (req, res) => {
         attributes: ['id', 'nombre']
       }]
     });
-
     res.json({
       success: true,
       message: 'Producto actualizado exitosamente',
@@ -257,8 +240,7 @@ const actualizarProducto = async (req, res) => {
 // Eliminar producto (out of stock)
 const eliminarProducto = async (req, res) => {
   try {
-    const { id } = req.params;
-
+    const { id } = req.query;
     const producto = await Producto.findByPk(id);
     if (!producto) {
       return res.status(404).json({
@@ -266,7 +248,6 @@ const eliminarProducto = async (req, res) => {
         message: 'Producto no encontrado'
       });
     }
-
     // Verificar que no esté en ventas activas
     const Facturacion  = require('../modelos/Facturacion');
     const ventasAsociadas = await Facturacion.count({
@@ -277,16 +258,13 @@ const eliminarProducto = async (req, res) => {
         where: { estado: { [Op.notIn]: ['cancelado'] } }
       }]
     });
-
     if (ventasAsociadas > 0) {
       return res.status(400).json({
         success: false,
         message: `No se puede eliminar el producto. Está asociado a ${ventasAsociadas} venta(s) activa(s)`
       });
     }
-
     await producto.update({ stock: 0, activo: false });
-
     res.json({
       success: true,
       message: 'Producto marcado como fuera de stock y desactivado'
@@ -302,10 +280,14 @@ const eliminarProducto = async (req, res) => {
 
 // Actualizar stock de producto
 const actualizarStock = async (req, res) => {
+console.log('BODY:', req.body);
+console.log('QUERY:', req.query);
+console.log('USUARIO:', req.usuario);
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const { stock } = req.body;
-
+    console.log('Query ID:', id);
+    console.log('Body stock:', stock);
     const producto = await Producto.findByPk(id);
     if (!producto) {
       return res.status(404).json({
@@ -313,18 +295,18 @@ const actualizarStock = async (req, res) => {
         message: 'Producto no encontrado'
       });
     }
-
-    
-
     await producto.update({ stock: parseInt(stock) });
-
+    // Reactivar si stock > 0
+    if (producto.stock > 0 && !producto.activo) {
+      await producto.update({ activo: true });
+    }
     res.json({
       success: true,
       message: 'Stock actualizado exitosamente',
       data: { id: producto.id, stock: producto.stock }
     });
   } catch (error) {
-    console.error('Error al actualizar stock:', error);
+    console.error('Error al actualizar stock:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'

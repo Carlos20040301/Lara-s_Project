@@ -193,16 +193,17 @@
 const express = require('express');
 const { body, query } = require('express-validator');
 const router = express.Router();
-const controladorCategoria = require('../controladores/controladorCategoria');
 const middlewareAutenticacion = require('../middlewares/middlewareAutenticacion');
-const { crearCategoria, actualizarCategoria, eliminarCategoria } = require('../controladores/controladorCategoria');
+const { obtenerCategorias, obtenerCategoriaPorId ,crearCategoria, actualizarCategoria, eliminarCategoria } = require('../controladores/controladorCategoria');
+const validarCampos = require('../middlewares/validationMiddleware');
 
 // Rutas públicas (solo lectura)
-router.get('/listar', controladorCategoria.obtenerCategorias);
+router.get('/listar', obtenerCategorias);
 
 router.get('/buscarCategoria', 
         query('id').isInt().withMessage('ID inválido'),
-    controladorCategoria.obtenerCategoriaPorId);
+        validarCampos,
+        obtenerCategoriaPorId);
 
 // Rutas protegidas (solo admins)
 router.post('/guardar', 
@@ -210,6 +211,7 @@ router.post('/guardar',
         .isLength({ min: 2, max: 100 }).withMessage('El nombre de la categoría debe tener entre 2 y 100 caracteres.'),
         body('descripcion').optional().isString().withMessage('La descripción debe ser una cadena de texto.'),
         body('activo').optional().isBoolean().withMessage('El campo activo debe ser un valor booleano (true/false).').toBoolean(),
+        validarCampos,
     middlewareAutenticacion(['admin']),crearCategoria);
 
 router.put('/actualizar', 
@@ -218,10 +220,12 @@ router.put('/actualizar',
         .isLength({ min: 2, max: 100 }).withMessage('El nombre de la categoría debe tener entre 2 y 100 caracteres.'),
         body('descripcion').optional().isString().withMessage('La descripción debe ser una cadena de texto.'),
         body('activo').optional().isBoolean().withMessage('El campo activo debe ser un valor booleano (true/false).').toBoolean(),
+        validarCampos,
     middlewareAutenticacion(['admin']),actualizarCategoria);
 
 router.delete('/eliminar', 
         query('id').isInt().withMessage('ID inválido'),
+        validarCampos,
     middlewareAutenticacion(['admin']),eliminarCategoria);
 
 module.exports = router; 
