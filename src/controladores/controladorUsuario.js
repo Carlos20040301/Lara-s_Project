@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const { enviarBienvenidaEmpleado } = require('../configuraciones/email');
 const argon2 = require('argon2');
 const Usuario = require('../modelos/Usuario');
 const Empleado = require('../modelos/Empleado');
@@ -118,6 +119,21 @@ const crearUsuario = async (req, res) => {
     // Hash de la contraseña
     const hash = await argon2.hash(contrasena);
     const nuevoUsuario = await Usuario.create({ primerNombre, segundoNombre, primerApellido, segundoApellido, genero, correo, contrasena: hash, rol });
+
+    // Enviar correo de bienvenida si el rol es empleado
+    try {
+      if (rol === 'empleado' || rol === 'vendedor' || rol === 'cajero' || rol === 'gerente') {
+        await enviarBienvenidaEmpleado({
+          nombre: primerNombre,
+          correo,
+          cargo: rol
+        });
+      }
+    } catch (err) {
+      console.error('Error al enviar correo de bienvenida:', err);
+      // No interrumpe la creación del usuario
+    }
+
     res.status(201).json({
       id: nuevoUsuario.id,
       primerNombre: nuevoUsuario.primerNombre,

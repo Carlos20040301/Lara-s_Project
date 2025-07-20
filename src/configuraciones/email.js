@@ -147,13 +147,15 @@ const enviarActualizacionEstado = async (pedido, nuevoEstado) => {
 const enviarBienvenidaEmpleado = async ({ nombre, correo, cargo }) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">¡Bienvenido a Lara's Joyería!</h2>
-      <p>¡Hola <strong>${nombre}</strong>!</p>
-      <p>Has sido registrado como empleado en Lara's Joyería.</p>
-      <p><strong>Tu cargo:</strong> ${cargo.charAt(0).toUpperCase() + cargo.slice(1)}</p>
-      <p>Si tienes dudas, contacta a tu administrador.</p>
-      <br>
-      <p>¡Bienvenido al equipo!</p>
+      <h2 style="color: #d4af37;">¡Bienvenido a Lara's Joyería!</h2>
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="color: #333; margin-top: 0;">Hola <span style='color:#d4af37;'>${nombre}</span>!</h3>
+        <p>Has sido registrado como <strong>${cargo.charAt(0).toUpperCase() + cargo.slice(1)}</strong> en Lara's Joyería.</p>
+        <p>Tu usuario ha sido creado exitosamente. ¡Bienvenido al equipo!</p>
+      </div>
+      <div style="margin-top: 30px; padding: 20px; background-color: #e9ecef; border-radius: 8px;">
+        <p style="margin: 0; color: #666;">Si tienes alguna pregunta, no dudes en contactar a tu administrador.</p>
+      </div>
       <div style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">
         <p>Joyería Lara's - Tu joyería de confianza</p>
       </div>
