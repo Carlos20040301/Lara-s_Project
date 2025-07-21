@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, query } = require('express-validator');
 const controladorCliente = require('../controladores/controladorCliente');
-const Cliente = require('../modelos/Cliente');
+const Cliente = require('../modelos/cliente');
 const Usuario = require('../modelos/Usuario');
 const { where } = require('sequelize');
 const router = express.Router();
@@ -16,7 +16,7 @@ const validarCampos = require('../middlewares/validationMiddleware');
  */
 /**
  * @swagger
- * /clientes/listar:
+ * /cliente/listar:
  *  get:
  *   summary: Listar todos los clientes
  *   tags: [Cliente]
@@ -60,7 +60,7 @@ router.get('/listar', controladorCliente.listarClientes);
 
 /**
  * @swagger
- * /clientes/guardar:
+ * /cliente/guardar:
  *  post:
  *   summary: Guardar todos los clientes
  *   tags: [Cliente]
@@ -134,7 +134,7 @@ router.post('/guardar',
 
 /**
  * @swagger
- * /clientes/editar:
+ * /cliente/editar:
  *   put:
  *     summary: Actualiza un cliente por su ID
  *     tags: [Cliente]
@@ -226,7 +226,7 @@ router.put('/editar',
 
 /**
  * @swagger
- * /clientes/eliminar:
+ * /cliente/eliminar:
  *   delete:
  *     summary: Eliminar cliente
  *     tags: [Cliente]

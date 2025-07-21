@@ -1,5 +1,6 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const path = require('path');
+require('dotenv').config();
 
 const options = {
   definition: {

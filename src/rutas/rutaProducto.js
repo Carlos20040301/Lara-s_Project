@@ -7,14 +7,139 @@ const uploadMiddlewareProductos = require('../middlewares/uploadMiddlewareProduc
 const validarCampos = require('../middlewares/validationMiddleware');
 
 // Rutas públicas (solo lectura)
+
+/**
+ * @swagger
+ * tags:
+ *  name: Producto
+ *  description: Peticiones para la gestion de productos
+ */
+/**
+ * @swagger
+ * /producto/listar:
+ *  get:
+ *   summary: Listar todos los productos
+ *   tags: [Producto]
+ *   responses:
+ *    200:
+ *     description: Listar los productos
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: array
+ *        items:
+ *         type: object
+ *         properties:
+ *          id:
+ *           type: integer
+ *           description: Id del producto
+ *          codigo:
+ *           type: string
+ *           description: Codigo del producto
+ *          nombre:
+ *           type: string
+ *           description: Nombre del producto
+ *          descripcion:
+ *           type: string
+ *           description: Descripcion del producto
+ *          precio:
+ *           type: decimal
+ *           description: precio del producto
+ *          stock:
+ *           type: integer
+ *           description: Existencia del producto
+ *          imagen:
+ *           type: string
+ *           description: RTN del cliente
+ *          categoria_id: 
+ *           type: integer
+ *           description: Id de la categoria del producto
+ *          activo:
+ *           type: boolean
+ *           description: Estado del producto
+ *    400:
+ *     description: Error al listar los clientes
+ */
 router.get('/listar', controladorProducto.obtenerProductos);
 
+/**
+ * @swagger
+ * /producto/buscarProducto:
+ *   get:
+ *     summary: Obtener detalles de un producto por ID
+ *     tags: [Producto]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del proveedor
+ *     responses:
+ *       200:
+ *         description: Detalles del proveedor
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Proveedor no encontrado
+ */
 router.get('/buscarProducto',
     query('id').isInt().withMessage('El ID del producto debe ser un número entero positivo y es requerido.'),
     validarCampos,
   controladorProducto.obtenerProductoPorId);
 
 // Rutas protegidas (solo admins)
+
+/**
+ * @swagger
+ * /producto/guardar:
+ *   post:
+ *     summary: Registrar un nuevo producto
+ *     tags: [Producto]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               codigo:
+ *                 type: string
+ *                 description: Codigo del producto
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre del producto
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripcion del producto
+ *               precio:
+ *                   type: decimal
+ *                   description: precio del producto
+ *               stock:
+ *                   type: integer
+ *                   description: Existencia del producto
+ *               categoria_id:
+ *                   type: integer
+ *                   description: Id de la categoria del producto
+ *               activo:
+ *                   type: boolean
+ *                   description: Estado del producto
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imagen:
+ *                type: string
+ *                format: binary
+ *                description: Imagen del producto
+ *     responses:
+ *       201:
+ *         description: Proveedor registrado exitosamente
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ */
 router.post('/guardar', 
     body('codigo')
         .trim().notEmpty().withMessage('El código es requerido.')
@@ -42,6 +167,68 @@ router.post('/guardar',
   controladorProducto.crearProducto
 );
 
+/**
+ * @swagger
+ * /producto/actualizar:
+ *   put:
+ *     summary: Actualizar un producto
+ *     tags: [Producto]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               codigo:
+ *                 type: string
+ *                 description: Codigo del producto
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre del producto
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripcion del producto
+ *               precio:
+ *                   type: decimal
+ *                   description: precio del producto
+ *               stock:
+ *                   type: integer
+ *                   description: Existencia del producto
+ *               categoria_id:
+ *                   type: integer
+ *                   description: Id de la categoria del producto
+ *               activo:
+ *                   type: boolean
+ *                   description: Estado del producto
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               categoria_id:
+ *                   type: integer
+ *                   description: Id de la categoria del producto
+ *               imagen:
+ *                type: string
+ *                format: binary
+ *                description: Imagen del producto
+ *     responses:
+ *       200:
+ *         description: Producto actualizado exitosamente
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Compra no encontrada
+ */
 router.put('/actualizar', 
     query('id')
         .isInt({ min: 1 }).withMessage('El ID del producto debe ser un número entero positivo y es requerido.'),
@@ -66,6 +253,29 @@ router.put('/actualizar',
   controladorProducto.actualizarProducto
 );
 
+/**
+ * @swagger
+ * /producto/eliminar:
+ *   delete:
+ *     summary: Eliminar un producto
+ *     tags: [Producto]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *     responses:
+ *       200:
+ *         description: Producto eliminado exitosamente
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Compra no encontrada
+ */
 router.delete('/eliminar',
   query('id').isInt({ min: 1 }).withMessage('El ID del producto debe ser un número entero positivo y es requerido.'),
   validarCampos,

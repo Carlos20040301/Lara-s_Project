@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-const Cliente = require('../modelos/Cliente');
+const Cliente = require('../modelos/cliente');
 const { where } = require('sequelize');
 const Usuario = require('../modelos/Usuario');
 const Venta = require('../modelos/Venta');

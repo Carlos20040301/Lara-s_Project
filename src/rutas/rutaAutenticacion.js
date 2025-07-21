@@ -23,7 +23,7 @@
  *               - contrasena
  *               - rol
  *             properties:
- *               nombre:
+ *               primerNombre:
  *                 type: string
  *                 description: Nombre completo del usuario
  *               correo:
@@ -38,7 +38,8 @@
  *                 enum: [admin, empleado, cliente]
  *                 description: Rol del usuario
  *           example:
- *             nombre: "Juan Pérez"
+ *             primerNombre: "Juan"
+ *             primerApellido: "Perez"
  *             correo: "juan@example.com"
  *             contrasena: "123456"
  *             rol: "admin"

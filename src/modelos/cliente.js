@@ -27,7 +27,6 @@ const Cliente = sequelize.define(
         rtn: {
             type: DataTypes.STRING(14),
             allowNull: true,
-            unique: true,
         },
         genero: {
             type: DataTypes.ENUM('M', 'F', 'O'),

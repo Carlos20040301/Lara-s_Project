@@ -16,10 +16,9 @@ const {
  *   name: Proveedor
  *   description: Endpoints para la gestión de proveedores
  */
-
 /**
  * @swagger
- * /proveedor:
+ * /proveedor/listar:
  *   get:
  *     summary: Listar todos los proveedores
  *     tags: [Proveedor]
@@ -52,6 +51,40 @@ const {
  *                 direccion: "Calle 45 Sur"
  *       401:
  *         description: No autorizado
+ */
+router.get('/listar', obtenerProveedores);
+
+/**
+ * @swagger
+ * /proveedor/buscarProveedor:
+ *   get:
+ *     summary: Obtener detalles de un proveedor por ID
+ *     tags: [Proveedor]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del proveedor
+ *     responses:
+ *       200:
+ *         description: Detalles del proveedor
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Proveedor no encontrado
+ */
+router.get('/buscarProveedor',
+    query('id').isInt().withMessage('ID inválido'),
+  obtenerProveedor
+);
+
+// Crear, actualizar y eliminar - solo admin
+
+/**
+ * @swagger
+ * /proveedor/guardar:
  *   post:
  *     summary: Registrar un nuevo proveedor
  *     tags: [Proveedor]
@@ -101,32 +134,20 @@ const {
  *       401:
  *         description: No autorizado
  */
+router.post('/guardar', 
+    body('nombre').notEmpty().withMessage('El nombre es obligatorio'),
+    body('correo').optional().isEmail().withMessage('Correo inválido'),
+  autenticacionMiddleware(['admin']), crearProveedor
+);
 
 /**
  * @swagger
- * /proveedor/{id}:
- *   get:
- *     summary: Obtener detalles de un proveedor por ID
- *     tags: [Proveedor]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID del proveedor
- *     responses:
- *       200:
- *         description: Detalles del proveedor
- *       401:
- *         description: No autorizado
- *       404:
- *         description: Proveedor no encontrado
+ * /proveedor/actualizar: 
  *   put:
  *     summary: Actualizar un proveedor
  *     tags: [Proveedor]
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: id
  *         required: true
  *         schema:
@@ -154,11 +175,22 @@ const {
  *         description: No autorizado
  *       404:
  *         description: Proveedor no encontrado
+ */
+router.put('/actualizar', 
+    query('id').isInt().withMessage('ID inválido'),
+    body('correo').optional().isEmail().withMessage('Correo inválido'),
+  autenticacionMiddleware(['admin']), actualizarProveedor
+);
+
+
+/**
+ * @swagger
+ * /proveedor/eliminar: 
  *   delete:
  *     summary: Eliminar un proveedor
  *     tags: [Proveedor]
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: id
  *         required: true
  *         schema:
@@ -172,24 +204,6 @@ const {
  *       404:
  *         description: Proveedor no encontrado
  */
-
-router.get('/listar', obtenerProveedores);
-
-router.get('/buscarProveedor',
-    query('id').isInt().withMessage('ID inválido'),
-  obtenerProveedor);
-
-// Crear, actualizar y eliminar - solo admin
-router.post('/guardar', 
-    body('nombre').notEmpty().withMessage('El nombre es obligatorio'),
-    body('correo').optional().isEmail().withMessage('Correo inválido'),
-  autenticacionMiddleware(['admin']), crearProveedor);
-
-router.put('/actualizar', 
-    query('id').isInt().withMessage('ID inválido'),
-    body('correo').optional().isEmail().withMessage('Correo inválido'),
-  autenticacionMiddleware(['admin']), actualizarProveedor);
-
 router.delete('/eliminar',
     query('id').isInt().withMessage('ID inválido'),
   autenticacionMiddleware(['admin']), eliminarProveedor);

@@ -12,7 +12,7 @@ const {obtenerUsuarios, obtenerUsuario, actualizarUsuario, eliminarUsuario, crea
  */
 /**
  * @swagger
- * /usuarios/listar:
+ * /usuario/listar:
  *   get:
  *     summary: Listar todos los usuarios
  *     tags: [Usuario]
@@ -32,7 +32,7 @@ router.get('/listar', autenticacionMiddleware(['admin']), obtenerUsuarios);
 
 /**
  * @swagger
- * /usuarios/buscarUsuario:
+ * /usuario/buscarUsuario:
  *   get:
  *     summary: Buscar un usuario por ID
  *     tags: [Usuario]
@@ -63,7 +63,7 @@ router.get('/buscarUsuario',
 
 /**
  * @swagger
- * /usuarios/actualizar:
+ * /usuario/actualizar:
  *   put:
  *     summary: Actualizar un usuario por ID
  *     tags: [Usuario]
@@ -81,7 +81,10 @@ router.get('/buscarUsuario',
  *           schema:
  *             type: object
  *             properties:
- *               nombre:
+ *               primerNombre:
+ *                 type: string
+ *                 description: Nombre del usuario
+ *               primerApellido:
  *                 type: string
  *                 description: Nombre del usuario
  *               correo:
@@ -127,7 +130,7 @@ router.put('/actualizar',
 
 /**
  * @swagger
- * /usuarios/eliminar:
+ * /usuario/eliminar:
  *   delete:
  *     summary: Eliminar un usuario por ID
  *     tags: [Usuario]
@@ -159,54 +162,6 @@ router.delete('/eliminar',
       query('id').isInt().withMessage('ID inválido'),
     autenticacionMiddleware(['admin']), eliminarUsuario);
 
-/**
- * @swagger
- * /usuarios/crear:
- *   post:
- *     summary: Crear un nuevo usuario
- *     tags: [Usuario]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nombre
- *               - correo
- *               - contrasena
- *               - rol
- *             properties:
- *               nombre:
- *                 type: string
- *                 description: Nombre del usuario
- *               correo:
- *                 type: string
- *                 description: Correo electrónico
- *               contrasena:
- *                 type: string
- *                 description: Contraseña (mínimo 6 caracteres)
- *               rol:
- *                 type: string
- *                 enum: [admin, empleado, cliente]
- *                 description: Rol del usuario
- *     responses:
- *       201:
- *         description: Usuario creado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 mensaje:
- *                   type: string
- *                 usuario:
- *                   $ref: '#/components/schemas/Usuario'
- *       400:
- *         description: Error de validación
- *       500:
- *         description: Error en el servidor
- */
 router.post('/', crearUsuario);
 
 /**
