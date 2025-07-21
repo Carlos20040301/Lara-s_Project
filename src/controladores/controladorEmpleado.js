@@ -47,7 +47,7 @@ const crearEmpleado = [
       const empleado = await Empleado.create({ id_usuario, cargo, telefono });
       // Enviar correo de bienvenida
       try {
-        await enviarBienvenidaEmpleado({ nombre: usuario.nombre, correo: usuario.correo, cargo });
+        await enviarBienvenidaEmpleado({ nombre: usuario.primerNombre, correo: usuario.correo, cargo });
       } catch (err) {
         console.error('No se pudo enviar el correo de bienvenida:', err);
       }

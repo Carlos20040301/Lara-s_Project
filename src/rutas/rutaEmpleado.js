@@ -12,7 +12,7 @@ const { obtenerEmpleados, obtenerEmpleado, crearEmpleado, actualizarEmpleado, el
  */
 /**
  * @swagger
- * /empleados/listar:
+ * /empleado/listar:
  *   get:
  *     summary: Listar todos los empleados
  *     tags: [Empleado]
@@ -55,7 +55,7 @@ router.get('/listar', autenticacionMiddleware(['admin']), obtenerEmpleados);
 
 /**
  * @swagger
- * /empleados/buscarEmpleado:
+ * /empleado/buscarEmpleado:
  *   get:
  *     summary: Buscar un empleado por ID
  *     tags: [Empleado]
@@ -86,7 +86,7 @@ router.get('/buscarEmpleado',
 
 /**
  * @swagger
- * /empleados/guardar:
+ * /empleado/guardar:
  *   post:
  *     summary: Crear un nuevo empleado
  *     tags: [Empleado]
@@ -131,7 +131,7 @@ router.post('/guardar',
 
 /**
  * @swagger
- * /empleados/actualizar:
+ * /empleado/actualizar:
  *   put:
  *     summary: Actualizar un empleado por ID
  *     tags: [Empleado]
@@ -183,7 +183,7 @@ router.put('/actualizar',
 
 /**
  * @swagger
- * /empleados/eliminar:
+ * /empleado/eliminar:
  *   delete:
  *     summary: Eliminar un empleado por ID
  *     tags: [Empleado]
