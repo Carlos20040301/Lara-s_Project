@@ -166,6 +166,10 @@ const Inventario: React.FC = () => {
   });
   const [editProductId, setEditProductId] = useState<number | null>(null);
 
+  // Depuración: mostrar categorías en consola
+  useEffect(() => {
+    console.log('CATEGORIAS EN EL FRONTEND:', categorias);
+  }, [categorias]);
   useEffect(() => {
     loadData();
   }, []);
@@ -187,7 +191,8 @@ const Inventario: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    // Depuración: mostrar el estado antes de enviar
+    console.log('formData antes de enviar:', formData);
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('codigo', formData.codigo);
@@ -199,6 +204,11 @@ const Inventario: React.FC = () => {
       if (formData.imagen) {
         formDataToSend.append('imagen', formData.imagen);
       }
+
+      // Depuración: mostrar el contenido de FormData (compatible con ES5)
+      formDataToSend.forEach((value, key) => {
+        console.log('FormData:', key, value);
+      });
 
       if (editProductId) {
         await productoService.update(editProductId, formDataToSend);
@@ -260,7 +270,7 @@ const Inventario: React.FC = () => {
             return (
               <ProductCard key={producto.id} style={isOutOfStock ? { opacity: 0.7 } : {}}>
                 <ProductImage
-                  src={`/${producto.categoria?.nombre || 'SinCategoria'}/${producto.imagen}`}
+                  src={producto.imagen ? `http://localhost:3001/${producto.imagen.replace(/\\/g, '/')}` : '/placeholder-product.jpg'}
                   alt={producto.nombre}
                   onError={e => {
                     (e.target as HTMLImageElement).src = '/placeholder-product.jpg';
@@ -341,7 +351,10 @@ const Inventario: React.FC = () => {
                     required
                   >
                     <option value="">Seleccionar categoría</option>
-                    {categorias.map((categoria) => (
+                    {categorias && categorias.length === 0 && (
+                      <option value="" disabled>No hay categorías disponibles</option>
+                    )}
+                    {categorias && categorias.map((categoria) => (
                       <option key={categoria.id} value={String(categoria.id)}>
                         {categoria.nombre}
                       </option>

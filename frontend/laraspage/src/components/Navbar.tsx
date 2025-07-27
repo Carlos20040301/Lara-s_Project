@@ -148,14 +148,14 @@ const LogoutButton = styled.button`
 `;
 
 // Mobile Menu Styles
-const MobileMenu = styled.div<{ isOpen: boolean }>`
+const MobileMenu = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 70px;
   left: 0;
   right: 0;
   background: var(--white);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transform: translateY(${props => props.isOpen ? '0' : '-100%'});
+  transform: translateY(${props => props.$isOpen ? '0' : '-100%'});
   transition: transform 0.3s ease;
   z-index: 999;
   max-height: calc(100vh - 70px);
@@ -214,15 +214,15 @@ const MobileUserRole = styled.p`
 
 
 
-const Overlay = styled.div<{ isOpen: boolean }>`
+const Overlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  opacity: ${props => props.isOpen ? '1' : '0'};
-  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  opacity: ${props => props.$isOpen ? '1' : '0'};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
   transition: all 0.3s ease;
   z-index: 998;
 
@@ -301,7 +301,7 @@ const Navbar: React.FC = () => {
         </NavContent>
       </NavbarContainer>
 
-      <MobileMenu isOpen={isMobileMenuOpen}>
+      <MobileMenu $isOpen={isMobileMenuOpen}>
         <MobileMenuContent>
           {menuItems.map((item) => (
             <MobileNavLink
@@ -330,7 +330,7 @@ const Navbar: React.FC = () => {
       </MobileMenu>
 
       <Overlay 
-        isOpen={isMobileMenuOpen} 
+        $isOpen={isMobileMenuOpen} 
         onClick={() => setIsMobileMenuOpen(false)} 
       />
     </>

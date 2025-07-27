@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { LoginCredentials, AuthResponse, Producto, Cliente, Venta, Categoria } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Configurar axios
 const api = axios.create({
@@ -59,7 +60,7 @@ export const authService = {
 // Servicios de productos
 export const productoService = {
   getAll: async (): Promise<Producto[]> => {
-    const response = await api.get('/producto');
+    const response = await api.get('/producto/listar');
     return response.data.data || response.data;
   },
 
@@ -69,7 +70,7 @@ export const productoService = {
   },
 
   create: async (producto: FormData): Promise<Producto> => {
-    const response = await api.post('/producto', producto, {
+    const response = await api.post('/producto/guardar', producto, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -78,7 +79,7 @@ export const productoService = {
   },
 
   update: async (id: number, producto: FormData): Promise<Producto> => {
-    const response = await api.put(`/producto/${id}`, producto, {
+    const response = await api.put(`/producto/actualizar?id=${id}`, producto, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -145,7 +146,7 @@ export const clienteService = {
 // Servicios de ventas
 export const ventaService = {
   getAll: async (): Promise<Venta[]> => {
-    const response = await api.get('/pedido');
+    const response = await api.get('/pedido/listar');
     return response.data.data || response.data;
   },
 
@@ -155,7 +156,30 @@ export const ventaService = {
   },
 
   create: async (venta: Partial<Venta>): Promise<Venta> => {
-    const response = await api.post('/pedido', venta);
+    // Validación previa de campos requeridos
+    const requiredFields = [
+      'cliente_nombre',
+      'cliente_email',
+      'cliente_telefono',
+      'direccion_entrega',
+      'metodo_pago',
+      'productos'
+    ];
+    for (const field of requiredFields) {
+      if (!(field in venta) || (field !== 'productos' && !venta[field as keyof typeof venta])) {
+        throw new Error(`El campo '${field}' es obligatorio y debe estar correctamente definido.`);
+      }
+    }
+    // Validar productos solo si existe y es array
+    if (!Array.isArray((venta as any).productos) || ((venta as any).productos.length === 0)) {
+      throw new Error("El campo 'productos' es obligatorio y debe ser un array con al menos un producto.");
+    }
+    for (const producto of (venta as any).productos) {
+      if (!producto.producto_id || !producto.cantidad) {
+        throw new Error('Cada producto debe tener producto_id y cantidad.');
+      }
+    }
+    const response = await api.post('/pedido/guardar', venta);
     return response.data.data || response.data;
   },
 

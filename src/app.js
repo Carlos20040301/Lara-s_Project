@@ -74,6 +74,10 @@ app.use(express.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos estáticos de uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Rutas
 app.use('/api/autenticacion', require('./rutas/rutaAutenticacion.js')); //
 app.use('/api/auth', require('./rutas/rutaRecuperacionPassword.js')); //

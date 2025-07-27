@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, query } = require('express-validator');
 const controladorCliente = require('../controladores/controladorCliente');
-const Cliente = require('../modelos/cliente');
+const Cliente = require('../modelos/Cliente');
 const Usuario = require('../modelos/Usuario');
 const { where } = require('sequelize');
 const router = express.Router();
@@ -109,11 +109,11 @@ router.post('/guardar',
         'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
     // Campos Opcionales
-    body('segundoNombre').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo nombre debe tener entre 5 y 50 caracteres'
+    body('segundoNombre').optional().isLength({ max: 50, min: 2 }).withMessage(
+        'El segundo nombre debe tener entre 2 y 50 caracteres'
     ),
-    body('segundoApellido').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo apellido debe tener entre 5 y 50 caracteres'
+    body('segundoApellido').optional().isLength({ max: 50, min: 2 }).withMessage(
+        'El segundo apellido debe tener entre 2 y 50 caracteres'
     ),
     body('rtn').optional().isLength({ max: 14, min: 14 }).withMessage(
         'El RTN debe tener exactamente 14 caracteres'
@@ -200,11 +200,11 @@ router.put('/editar',
         'El primer apellido debe tener entre 2 y 50 caracteres'
     ),
     // Campos Opcionales
-    body('segundoNombre').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo nombre debe tener entre 5 y 50 caracteres'
+    body('segundoNombre').optional().isLength({ max: 50, min: 2 }).withMessage(
+        'El segundo nombre debe tener entre 2 y 50 caracteres'
     ),
-    body('segundoApellido').optional().isLength({ max: 50, min: 5 }).withMessage(
-        'El segundo apellido debe tener entre 5 y 50 caracteres'
+    body('segundoApellido').optional().isLength({ max: 50, min: 2 }).withMessage(
+        'El segundo apellido debe tener entre 2 y 50 caracteres'
     ),
     body('rtn').optional({ checkFalsy: true }).isLength({ max: 14, min: 14 }).withMessage(
         'El RTN debe tener exactamente 14 caracteres'
@@ -261,8 +261,8 @@ router.delete('/eliminar',
 router.post('/crear-con-usuario',
     body('primerNombre').isLength({ min: 2, max: 50 }).withMessage('El primer nombre debe tener entre 2 y 50 caracteres'),
     body('primerApellido').isLength({ min: 2, max: 50 }).withMessage('El primer apellido debe tener entre 2 y 50 caracteres'),
-    body('segundoNombre').optional().isLength({ min: 5, max: 50 }).withMessage('El segundo nombre debe tener entre 5 y 50 caracteres'),
-    body('segundoApellido').optional().isLength({ min: 5, max: 50 }).withMessage('El segundo apellido debe tener entre 5 y 50 caracteres'),
+    body('segundoNombre').optional().isLength({ min: 2, max: 50 }).withMessage('El segundo nombre debe tener entre 2 y 50 caracteres'),
+    body('segundoApellido').optional().isLength({ min: 2, max: 50 }).withMessage('El segundo apellido debe tener entre 2 y 50 caracteres'),
     body('rtn').isLength({ min: 14, max: 14 }).withMessage('El RTN debe tener exactamente 14 caracteres')
       .custom(async (value) => {
         const clienteExistente = await Cliente.findOne({ where: { rtn: value } });

@@ -202,13 +202,15 @@ router.get('/buscarPedido',
  */
 router.post('/guardar',
     body('cliente_nombre')
-        .trim().notEmpty().withMessage('El nombre del cliente es requerido.'),
+        .trim().notEmpty().withMessage('El nombre del cliente es requerido.')
+        .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 letras.')
+        .matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/).withMessage('El nombre solo puede contener letras y espacios.'),
     body('cliente_email')
         .trim().notEmpty().withMessage('El correo es requerido.')
         .isEmail().withMessage('El correo no es válido.'),
     body('cliente_telefono')
         .notEmpty().withMessage('El teléfono es requerido.')
-        .matches(/^\d{10}$/).withMessage('El teléfono debe tener 10 dígitos.'),
+        .matches(/^\d{8,15}$/).withMessage('El teléfono debe tener entre 8 y 15 dígitos.'),
     body('direccion_entrega')
         .trim().notEmpty().withMessage('La dirección de entrega es requerida.'),
     body('metodo_pago')

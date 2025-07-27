@@ -52,6 +52,11 @@ export interface Cliente {
 }
 
 export interface Venta {
+  productos?: {
+    producto_id: number;
+    cantidad: number;
+    descuento?: number;
+  }[];
   id: number;
   numero_pedido: string;
   cliente_nombre: string;

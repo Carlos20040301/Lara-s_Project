@@ -200,20 +200,31 @@ const Ventas: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const ventaData = {
-        cliente_id: formData.clienteId,
+      // Solo valores válidos para método de pago
+      const metodoPagoValido = ['efectivo', 'tarjeta', 'transferencia'].includes(formData.metodo_pago)
+        ? formData.metodo_pago
+        : 'efectivo';
+      // Solo los campos requeridos en productos
+      const productos = formData.productosVenta.map((p: any) => ({
+        producto_id: p.producto_id,
+        cantidad: p.cantidad,
+        descuento: p.descuento || 0
+      }));
+      const ventaData: Partial<Venta> = {
         cliente_nombre: formData.cliente_nombre,
         cliente_email: formData.cliente_email,
         cliente_telefono: formData.cliente_telefono,
         direccion_entrega: formData.direccion_entrega,
-        metodo_pago: formData.metodo_pago as 'efectivo' | 'tarjeta' | 'transferencia' | 'paypal',
+        metodo_pago: metodoPagoValido as 'efectivo' | 'tarjeta' | 'transferencia' | 'paypal',
         notas: formData.notas,
-        productos: formData.productosVenta,
+        productos,
         subtotal: parseFloat(formData.subtotal),
         impuesto: parseFloat(formData.impuesto),
-        total: parseFloat(formData.total),
-        empleado_id: user?.id
+        total: parseFloat(formData.total)
       };
+      if (user?.id !== undefined && user?.rol === 'empleado') {
+        (ventaData as any).empleado_id = user.id;
+      }
       const response = await ventaService.create(ventaData);
       setShowModal(false);
       setFormData({

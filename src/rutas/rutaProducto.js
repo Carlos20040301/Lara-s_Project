@@ -141,6 +141,8 @@ router.get('/buscarProducto',
  *         description: No autorizado
  */
 router.post('/guardar', 
+    middlewareAutenticacion(['admin']),
+    uploadMiddlewareProductos.single('imagen'),
     body('codigo')
         .trim().notEmpty().withMessage('El código es requerido.')
         .isLength({ min: 1, max: 50 }).withMessage('El código debe tener entre 1 y 50 caracteres.'),
@@ -159,12 +161,8 @@ router.post('/guardar',
     body('categoria_id')
         .notEmpty().withMessage('El ID de categoría es requerido.')
         .isInt({ min: 1 }).withMessage('El ID de categoría debe ser un número entero positivo.'),
-        validarCampos,
-  //middlewareAutenticacion.verificarToken, 
-  //middlewareAutenticacion.verificarAdmin,
-  middlewareAutenticacion(['admin']), 
-  uploadMiddlewareProductos.single('imagen'), 
-  controladorProducto.crearProducto
+    validarCampos,
+    controladorProducto.crearProducto
 );
 
 /**
@@ -230,6 +228,8 @@ router.post('/guardar',
  *         description: Compra no encontrada
  */
 router.put('/actualizar', 
+    middlewareAutenticacion(['admin']),
+    uploadMiddlewareProductos.single('imagen'),
     query('id')
         .isInt({ min: 1 }).withMessage('El ID del producto debe ser un número entero positivo y es requerido.'),
     body('codigo')
@@ -245,12 +245,8 @@ router.put('/actualizar',
         .optional({ checkFalsy: true }).isInt({ min: 0 }).withMessage('El stock debe ser un número entero positivo.'),
     body('categoria_id')
         .optional({ checkFalsy: true }).isInt({ min: 1 }).withMessage('El ID de categoría debe ser un número entero positivo.'),
-        validarCampos,
-  //middlewareAutenticacion.verificarToken, 
-  //middlewareAutenticacion.verificarAdmin,
-  middlewareAutenticacion(['admin']), 
-  uploadMiddlewareProductos.single('imagen'), 
-  controladorProducto.actualizarProducto
+    validarCampos,
+    controladorProducto.actualizarProducto
 );
 
 /**
