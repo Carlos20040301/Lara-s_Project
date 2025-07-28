@@ -270,11 +270,12 @@ const Inventario: React.FC = () => {
             return (
               <ProductCard key={producto.id} style={isOutOfStock ? { opacity: 0.7 } : {}}>
                 <ProductImage
-                  src={producto.imagen ? `http://localhost:3001/${producto.imagen.replace(/\\/g, '/')}` : '/placeholder-product.jpg'}
+                  src={
+                    producto.imagen && producto.categoria
+                      ? `/${producto.categoria.nombre}/${producto.imagen}`
+                      : '/placeholder-product.jpg'
+                  }
                   alt={producto.nombre}
-                  onError={e => {
-                    (e.target as HTMLImageElement).src = '/placeholder-product.jpg';
-                  }}
                 />
                 <ProductName>{producto.nombre}</ProductName>
                 <ProductCode>Código: {producto.codigo}</ProductCode>
