@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Inventario from './pages/Inventario';
 import Clientes from './pages/Clientes';
 import Ventas from './pages/Ventas';
+import Usuarios from './pages/Usuarios';
 
 // Componente para proteger rutas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,6 +31,14 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar-password" element={<RecuperarPassword />} />
+        <Route 
+          path="/usuarios" 
+          element={
+            <ProtectedRoute>
+              <Usuarios />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="/dashboard" 
           element={

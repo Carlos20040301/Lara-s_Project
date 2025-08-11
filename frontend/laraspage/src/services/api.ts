@@ -1,8 +1,13 @@
+
 import axios from 'axios';
 import { LoginCredentials, AuthResponse, Producto, Cliente, Venta, Categoria } from '../types';
 
-
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+
+// Eliminar venta usando query param, como espera el backend
+const deleteByQuery = async (id: number): Promise<void> => {
+  await api.delete(`/pedido/eliminar?id=${id}`);
+};
 
 // Configurar axios
 const api = axios.create({
@@ -36,25 +41,50 @@ api.interceptors.response.use(
 
 // Servicios de autenticación
 export const authService = {
+  // Actualizar usuario por id (solo para admin)
+  updateUsuario: async (id: number, data: any) => {
+    const response = await api.put(`/usuario/actualizar?id=${id}`, data);
+    return response.data;
+  },
+  // Obtener todos los usuarios desde MongoDB (solo para admin)
+  getAllUsuariosMongo: async () => {
+    const response = await api.get('/usuario-mongo/listar-mongo');
+    return response.data;
+  },
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post('/autenticacion/iniciar-sesion', credentials);
     return response.data;
   },
 
   register: async (usuario: any) => {
-    const response = await api.post('/usuario', usuario);
+    const response = await api.post('/autenticacion/registro', usuario);
     return response.data;
   },
+
 
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
   },
 
+  // Obtener todos los usuarios (solo para admin)
+  getAllUsuarios: async () => {
+    const response = await api.get('/usuario/listar');
+    return response.data;
+  },
+
+  // Eliminar usuario por id (solo para admin)
+  deleteUsuario: async (id: string) => {
+    const response = await api.delete(`/usuario/eliminar?id=${id}`);
+    return response.data;
+  },
+
   getCurrentUser: () => {
     const user = localStorage.getItem('usuario');
     return user ? JSON.parse(user) : null;
   },
+  // ...otros métodos...
+  deleteByQuery,
 };
 
 // Servicios de productos
@@ -88,7 +118,7 @@ export const productoService = {
   },
 
   delete: async (id: number): Promise<void> => {
-    await api.delete(`/producto/${id}`);
+    await api.delete(`/producto/eliminar?id=${id}`);
   },
 
   updateStock: async (id: number, stock: number): Promise<Producto> => {
@@ -193,9 +223,10 @@ export const ventaService = {
   },
 
   updateStatus: async (id: number, estado: Venta['estado']): Promise<Venta> => {
-    const response = await api.patch(`/pedido/${id}/estado`, { estado });
+    const response = await api.patch(`/pedido/actualizarEstado?id=${id}`, { estado });
     return response.data.data || response.data;
   },
+  deleteByQuery,
 };
 
 export default api; 

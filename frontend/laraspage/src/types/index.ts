@@ -1,3 +1,12 @@
+// Relación anidada para mostrar el nombre del empleado en ventas
+export interface UsuarioRelacionado {
+  primerNombre?: string;
+  primerApellido?: string;
+}
+
+export interface EmpleadoRelacionado {
+  usuario?: UsuarioRelacionado;
+}
 export interface Usuario {
   id: number;
   nombre: string;
@@ -9,6 +18,9 @@ export interface Usuario {
   segundoNombre?: string;
   primerApellido?: string;
   segundoApellido?: string;
+  genero?: string;
+  telefono?: string;
+  cargo?: string;
 }
 
 export interface Producto {
@@ -73,6 +85,7 @@ export interface Venta {
   empleado_nombre?: string;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  empleado?: EmpleadoRelacionado;
 }
 
 export interface LoginCredentials {

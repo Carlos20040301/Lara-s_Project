@@ -25,15 +25,26 @@ const obtenerPedidos = async (req, res) => {
     }
     const pedidos = await Venta.findAll({
       where,
-      include: [{
-        model: Facturacion,
-        as: 'detalles',
-        include: [{
-          model: Producto,
-          as: 'producto',
-          attributes: ['id', 'nombre', 'codigo', 'precio']
-        }]
-      }],
+      include: [
+        {
+          model: Facturacion,
+          as: 'detalles',
+          include: [{
+            model: Producto,
+            as: 'producto',
+            attributes: ['id', 'nombre', 'codigo', 'precio']
+          }]
+        },
+        {
+          model: require('../modelos/Empleado'),
+          as: 'empleado',
+          attributes: ['id', 'cargo', 'telefono', 'id_usuario'],
+          include: [{
+            model: require('../modelos/Usuario'),
+            attributes: ['primerNombre', 'primerApellido']
+          }]
+        }
+      ],
       order: [['fecha_creacion', 'DESC']]
     });
     res.json({
@@ -86,10 +97,10 @@ const obtenerPedidoPorId = async (req, res) => {
 // Crear nuevo pedido
 const crearPedido = async (req, res) => {
   if (!req.user?.id) {
-  return res.status(401).json({
-    success: false,
-    message: 'Empleado no autenticado o falta el ID en el token.'
-  });
+    return res.status(401).json({
+      success: false,
+      message: 'Empleado no autenticado o falta el ID en el token.'
+    });
   }
   try {
     const {
@@ -146,20 +157,58 @@ const crearPedido = async (req, res) => {
     // Generar número de pedido único
     const { nanoid } = await import('nanoid');
     const numeroPedido = `PED-${nanoid(8).toUpperCase()}`;
+    // Buscar el empleado por id_usuario (id del usuario autenticado)
+    let empleadoId = req.user?.empleado_id_mysql;
+    if (!empleadoId && req.user?.id) {
+      const Empleado = require('../modelos/Empleado');
+      const empleado = await Empleado.findOne({ where: { id_usuario: req.user.id } });
+      if (empleado) {
+        empleadoId = empleado.id;
+      } else if (req.user.rol === 'admin') {
+        // Si es admin y no tiene registro en Empleado, guardar null (no string) en empleado_id
+        empleadoId = null;
+      } else {
+        console.error('No se encontró un empleado vinculado al usuario con id_usuario:', req.user.id);
+        return res.status(400).json({
+          success: false,
+          message: 'No se encontró un empleado vinculado a este usuario. Contacte a un administrador.'
+        });
+      }
+    }
+    if (!empleadoId && req.user.rol === 'admin') {
+      // Permitir que el admin registre ventas aunque no tenga registro en Empleado
+      empleadoId = null;
+    } else if (!empleadoId) {
+      console.error('No se pudo determinar el empleado_id para la venta. Usuario:', req.user);
+      return res.status(400).json({
+        success: false,
+        message: 'No se pudo determinar el empleado que registra la venta.'
+      });
+    }
     // Crear la venta
-    const nuevaVenta = await Venta.create({
-      numero_pedido: numeroPedido,
-      cliente_nombre,
-      cliente_email,
-      cliente_telefono,
-      direccion_entrega,
-      subtotal,
-      impuesto,
-      total,
-      metodo_pago,
-      notas,
-      empleado_id: req.user?.id || null
-    });
+    let nuevaVenta;
+    try {
+      nuevaVenta = await Venta.create({
+        numero_pedido: numeroPedido,
+        cliente_nombre,
+        cliente_email,
+        cliente_telefono,
+        direccion_entrega,
+        subtotal,
+        impuesto,
+        total,
+        metodo_pago,
+        notas,
+        empleado_id: empleadoId
+      });
+    } catch (errVenta) {
+      console.error('Error al crear la venta (debug):', errVenta);
+      return res.status(500).json({
+        success: false,
+        message: 'Error desconocido al crear la venta',
+        error: errVenta
+      });
+    }
     // Crear detalles de facturación y actualizar stock
     for (const detalle of detallesProductos) {
       await Facturacion.create({
@@ -184,7 +233,7 @@ const crearPedido = async (req, res) => {
       metodo_pago,
       referencia: numeroPedido,
       venta_id: nuevaVenta.id,
-      empleado_id: req.user?.id || null
+      empleado_id: empleadoId
     });
     // Enviar email al cliente
     try {

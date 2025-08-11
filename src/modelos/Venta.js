@@ -93,4 +93,8 @@ const Venta = sequelize.define('Venta', {
 
 
 
+// Relación con Empleado
+const Empleado = require('./Empleado');
+Venta.belongsTo(Empleado, { foreignKey: 'empleado_id', as: 'empleado' });
+
 module.exports = Venta; 

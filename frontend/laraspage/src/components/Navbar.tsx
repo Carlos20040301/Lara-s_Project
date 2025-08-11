@@ -250,10 +250,12 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: renderIcon(FaHome) },
+    { path: '/dashboard', label: 'Inicio', icon: renderIcon(FaHome) },
     { path: '/inventario', label: 'Inventario', icon: renderIcon(FaBoxes) },
     { path: '/clientes', label: 'Clientes', icon: renderIcon(FaUsers) },
-    { path: '/ventas', label: 'Ventas', icon: renderIcon(FaCashRegister) }
+    { path: '/ventas', label: 'Ventas', icon: renderIcon(FaCashRegister) },
+    // Solo admin puede ver Usuarios
+    ...(user?.rol === 'admin' ? [{ path: '/usuarios', label: 'Usuarios', icon: renderIcon(FaUser) }] : [])
   ];
 
   return (
@@ -287,7 +289,10 @@ const Navbar: React.FC = () => {
                       : user.correo || 'Usuario')
                   : 'Usuario'}
               </UserName>
-              <UserRole>{user?.rol || 'Empleado'}</UserRole>
+              {/* Solo admin puede ver el rol */}
+              {user?.rol === 'admin' && (
+                <UserRole>{user.rol}</UserRole>
+              )}
             </UserInfo>
             <LogoutButton onClick={handleLogout}>
               {renderIcon(FaSignOutAlt)}
@@ -319,12 +324,15 @@ const Navbar: React.FC = () => {
             Cerrar Sesión
           </MobileNavLink>
           
+          {/* Solo admin puede ver el rol en móvil */}
           <MobileUserInfo>
             <MobileUserName>
               {renderIcon(FaUser)}
               {user?.nombre || 'Usuario'}
             </MobileUserName>
-            <MobileUserRole>{user?.rol || 'Empleado'}</MobileUserRole>
+            {user?.rol === 'admin' && (
+              <MobileUserRole>{user.rol}</MobileUserRole>
+            )}
           </MobileUserInfo>
         </MobileMenuContent>
       </MobileMenu>

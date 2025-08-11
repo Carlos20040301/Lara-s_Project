@@ -226,6 +226,8 @@ const InfoText = styled.p`
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  // Cargar usuarios solo si es admin
+
 
   const changingTexts = [
     "Lara's Joyería - Las mejores joyas",
@@ -244,7 +246,6 @@ const Dashboard: React.FC = () => {
         prevIndex === changingTexts.length - 1 ? 0 : prevIndex + 1
       );
     }, 3000);
-
     return () => clearInterval(interval);
   }, [changingTexts.length]);
 

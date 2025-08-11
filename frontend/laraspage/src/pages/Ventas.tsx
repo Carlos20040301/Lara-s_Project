@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import Navbar from '../components/Navbar';
 import { ventaService, clienteService, productoService } from '../services/api';
 import { Venta, Cliente, Producto } from '../types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+// ...otros imports...
 import { 
   Button, 
   ActionButton, 
@@ -121,6 +124,9 @@ const SubmitButton = styled(Button)`
 const Ventas: React.FC = () => {
   const { user } = useAuth();
   const [ventas, setVentas] = useState<Venta[]>([]);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState<Venta | null>(null);
+  const [showEstadoModal, setShowEstadoModal] = useState(false);
+  const [nuevoEstado, setNuevoEstado] = useState<Venta['estado']>('pendiente');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [productosDisponibles, setProductosDisponibles] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +144,8 @@ const Ventas: React.FC = () => {
     cantidadSeleccionada: 1,
     subtotal: '',
     impuesto: '',
-    total: ''
+    total: '',
+    empleado_nombre: user?.nombre ? user.nombre : 'No identificado'
   });
 
   useEffect(() => {
@@ -177,7 +184,7 @@ const Ventas: React.FC = () => {
 
   const handleAgregarProducto = () => {
     if (formData.productoSeleccionado && formData.cantidadSeleccionada > 0) {
-      const producto = productosDisponibles.find(p => p.id === parseInt(formData.productoSeleccionado));
+      const producto = productosDisponibles.find(p => p.id.toString() === formData.productoSeleccionado);
       if (producto) {
         setFormData({
           ...formData,
@@ -222,8 +229,9 @@ const Ventas: React.FC = () => {
         impuesto: parseFloat(formData.impuesto),
         total: parseFloat(formData.total)
       };
-      if (user?.id !== undefined && user?.rol === 'empleado') {
+      if (user?.id !== undefined) {
         (ventaData as any).empleado_id = user.id;
+        (ventaData as any).empleado_nombre = user.nombre ? user.nombre : 'No identificado';
       }
       const response = await ventaService.create(ventaData);
       setShowModal(false);
@@ -240,7 +248,8 @@ const Ventas: React.FC = () => {
         cantidadSeleccionada: 1,
         subtotal: '',
         impuesto: '',
-        total: ''
+        total: '',
+        empleado_nombre: user?.nombre ? user.nombre : 'No identificado'
       });
       loadData();
       if (response && response.numero_pedido) {
@@ -258,11 +267,18 @@ const Ventas: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    const venta = ventas.find(v => v.id === id);
+    if (!venta) return;
     if (window.confirm('¿Estás seguro de que quieres eliminar esta venta?')) {
       try {
-        await ventaService.delete(id);
+        if (venta.estado !== 'cancelado') {
+          await ventaService.updateStatus(id, 'cancelado');
+        }
+        // Eliminar usando el endpoint correcto
+        await ventaService.deleteByQuery(id);
         loadData();
       } catch (error) {
+        alert('Solo se pueden eliminar ventas canceladas. Si el error persiste, revisa los permisos o el backend.');
         console.error('Error deleting sale:', error);
       }
     }
@@ -288,6 +304,62 @@ const Ventas: React.FC = () => {
     });
   };
 
+  const descargarPDF = () => {
+    const doc = new jsPDF();
+    doc.text('Ventas Recientes', 14, 16);
+
+    // Columnas según el rol
+    const tableColumn = [
+      'Pedido',
+      'Cliente',
+      'Total',
+      'Estado',
+      'Teléfono Cliente',
+      ...(user?.rol === 'admin' ? ['Empleado'] : [])
+    ];
+
+    // Filas
+    const tableRows = ventas.slice(0, 5).map((venta) => [
+      venta.numero_pedido ?? '',
+      venta.cliente_nombre ?? '',
+      (Number(venta.total) || 0).toFixed(2),
+      venta.estado ?? '',
+      venta.cliente_telefono ?? '',
+      ...(user?.rol === 'admin'
+        ? [
+            venta.empleado && venta.empleado.usuario && (venta.empleado.usuario.primerNombre || venta.empleado.usuario.primerApellido)
+              ? `${venta.empleado.usuario.primerNombre || ''} ${venta.empleado.usuario.primerApellido || ''}`.trim()
+              : (venta.empleado_nombre && venta.empleado_nombre.trim() !== '' && venta.empleado_nombre !== 'No identificado'
+                  ? venta.empleado_nombre
+                  : (venta.empleado_id ? `ID: ${venta.empleado_id}` : 'No registrado'))
+          ].map(val => val ?? '')
+        : [])
+    ]);
+
+    const totalVentas = ventas.slice(0, 5).length;
+    const ingresos = ventas.slice(0, 5).reduce((sum, venta) => sum + Number(venta.total || 0), 0);  
+    const promedio = totalVentas > 0 ? (ingresos / totalVentas) : 0;
+
+    // Agrega resumen al PDF
+  doc.setFontSize(12);
+
+    // Generar la tabla y obtener la posición final
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 22
+    });
+
+    // Mueve el resumen después de la tabla
+    const afterTableY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 10 : 32;
+    doc.text(`Total de ventas: ${totalVentas}`, 14, afterTableY);
+    doc.text(`Ingresos: L. ${ingresos.toFixed(2)}`, 14, afterTableY + 8);
+    doc.text(`Promedio: L. ${promedio.toFixed(2)}`, 14, afterTableY + 16);
+
+    doc.save('ventas_recientes.pdf');
+  };
+
+
   return (
     <VentasContainer>
       <Navbar />
@@ -298,6 +370,10 @@ const Ventas: React.FC = () => {
             + Nueva Venta
           </AddButton>
         </Header>
+
+        <button onClick={descargarPDF} style={{marginBottom: 16, background: '#bfa14a', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer'}}>
+          Descargar PDF de Ventas Recientes
+        </button>
 
         <SalesGrid>
           <SalesCard>
@@ -310,12 +386,19 @@ const Ventas: React.FC = () => {
                   <TableHeaderCell>Total</TableHeaderCell>
                   <TableHeaderCell>Estado</TableHeaderCell>
                   <TableHeaderCell>Teléfono Cliente</TableHeaderCell>
-                  <TableHeaderCell>Empleado</TableHeaderCell>
+                  {user?.rol === 'admin' && (
+                    <TableHeaderCell>Empleado</TableHeaderCell>
+                  )}
                 </TableRow>
               </TableHeader>
               <tbody>
                 {ventas.slice(0, 5).map((venta) => (
-                  <TableRow key={venta.id}>
+                  <TableRow key={venta.id} style={{ cursor: 'pointer', background: ventaSeleccionada?.id === venta.id ? '#fffbe6' : undefined }}
+                    onClick={() => {
+                      setVentaSeleccionada(venta);
+                      setNuevoEstado(venta.estado);
+                      setShowEstadoModal(true);
+                    }}>
                     <TableCell>{venta.numero_pedido}</TableCell>
                     <TableCell>{venta.cliente_nombre}</TableCell>
                     <TableCell>L. {(Number(venta.total) || 0).toFixed(2)}</TableCell>
@@ -325,11 +408,56 @@ const Ventas: React.FC = () => {
                       </StatusBadge>
                     </TableCell>
                     <TableCell>{venta.cliente_telefono || 'N/A'}</TableCell>
-                    <TableCell>{venta.empleado_nombre || 'N/A'}</TableCell>
+                    {user?.rol === 'admin' && (
+                      <TableCell>
+                        {venta.empleado && venta.empleado.usuario && (venta.empleado.usuario.primerNombre || venta.empleado.usuario.primerApellido)
+                          ? `${venta.empleado.usuario.primerNombre || ''} ${venta.empleado.usuario.primerApellido || ''}`.trim()
+                          : (venta.empleado_nombre && venta.empleado_nombre.trim() !== '' && venta.empleado_nombre !== 'No identificado'
+                              ? venta.empleado_nombre
+                              : (venta.empleado_id ? `ID: ${venta.empleado_id}` : 'No registrado'))}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <Button style={{background:'#c00',color:'#fff',padding:'2px 10px',fontSize:14}} onClick={e => {e.stopPropagation(); handleDelete(venta.id);}}>Eliminar</Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </tbody>
             </SalesTable>
+            {/* Modal para cambiar estado */}
+            {showEstadoModal && ventaSeleccionada && (
+              <ModalOverlay onClick={() => setShowEstadoModal(false)}>
+                <ModalContent onClick={e => e.stopPropagation()} style={{maxWidth:400}}>
+                  <CloseButton onClick={() => setShowEstadoModal(false)}>×</CloseButton>
+                  <ModalTitle>Cambiar Estado de la Venta</ModalTitle>
+                  <div style={{marginBottom:16}}>
+                    <strong>Pedido:</strong> {ventaSeleccionada.numero_pedido}<br/>
+                    <strong>Cliente:</strong> {ventaSeleccionada.cliente_nombre}
+                  </div>
+                  <form onSubmit={async e => {
+                    e.preventDefault();
+                    try {
+                      await ventaService.updateStatus(ventaSeleccionada.id, nuevoEstado);
+                      setShowEstadoModal(false);
+                      setVentaSeleccionada(null);
+                      loadData();
+                    } catch (err) {
+                      alert('Error al cambiar el estado');
+                    }
+                  }}>
+                    <Select value={nuevoEstado} onChange={e => setNuevoEstado(e.target.value as Venta['estado'])} style={{width:'100%',marginBottom:16}} required>
+                      <option value="pendiente">Pendiente</option>
+                      <option value="confirmado">Confirmado</option>
+                      <option value="en_proceso">En Proceso</option>
+                      <option value="enviado">Enviado</option>
+                      <option value="entregado">Entregado</option>
+                      <option value="cancelado">Cancelado</option>
+                    </Select>
+                    <Button type="submit" style={{width:'100%'}}>Guardar Estado</Button>
+                  </form>
+                </ModalContent>
+              </ModalOverlay>
+            )}
           </SalesCard>
 
           <SalesCard>
@@ -349,30 +477,34 @@ const Ventas: React.FC = () => {
               <ModalTitle>Registrar Nueva Venta</ModalTitle>
               
               <Form onSubmit={handleSubmit}>
+                <div style={{marginBottom:12, fontWeight:600, color:'#333'}}>
+                  <span>Empleado que registra la venta: </span>
+                  <span style={{color:'#007bff'}}>{user?.nombre ? user.nombre : 'No identificado'}</span>
+                </div>
                 <FormGroup>
-                  <Label>Cliente</Label>
-                  <Select
-                    value={formData.clienteId}
-                    onChange={e => {
-                      const cliente = clientes.find(c => c.id === parseInt(e.target.value));
-                      setFormData({
-                        ...formData,
-                        clienteId: cliente ? String(cliente.id) : '',
-                        cliente_nombre: cliente ? `${cliente.primerNombre} ${cliente.primerApellido}` : '',
-                        cliente_email: cliente?.email || '',
-                        cliente_telefono: cliente?.telefono || ''
-                      });
-                    }}
-                    required
-                  >
-                    <option value="">Seleccionar cliente</option>
-                    {clientes.map((cliente) => (
-                      <option key={cliente.id} value={cliente.id}>
-                        {`${cliente.primerNombre} ${cliente.primerApellido}`}
-                      </option>
-                    ))}
-                  </Select>
-                </FormGroup>
+  <Label>Cliente</Label>
+  <Select
+    value={formData.clienteId}
+    onChange={e => {
+      const cliente = clientes.find(c => c.id.toString() === e.target.value);
+      setFormData({
+        ...formData,
+        clienteId: cliente ? cliente.id.toString() : '',
+        cliente_nombre: cliente ? `${cliente.primerNombre} ${cliente.primerApellido}` : '',
+        cliente_email: cliente?.email || '',
+        cliente_telefono: cliente?.telefono || ''
+      });
+    }}
+    required
+  >
+    <option value="">Seleccionar cliente</option>
+    {clientes.map((cliente) => (
+      <option key={cliente.id} value={cliente.id.toString()}>
+        {`${cliente.primerNombre} ${cliente.primerApellido}`}
+      </option>
+    ))}
+  </Select>
+</FormGroup>
 
                 <FormGroup>
                   <Label>Email del Cliente</Label>
@@ -395,19 +527,19 @@ const Ventas: React.FC = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Producto</Label>
-                  <Select
-                    value={formData.productoSeleccionado}
-                    onChange={e => setFormData({ ...formData, productoSeleccionado: e.target.value })}
-                  >
-                    <option value="">Seleccionar producto</option>
-                    {productosDisponibles.map((producto) => (
-                      <option key={producto.id} value={producto.id}>
-                        {producto.nombre} (L. {producto.precio})
-                      </option>
-                    ))}
-                  </Select>
-                </FormGroup>
+  <Label>Producto</Label>
+  <Select
+    value={formData.productoSeleccionado}
+    onChange={e => setFormData({ ...formData, productoSeleccionado: e.target.value })}
+  >
+    <option value="">Seleccionar producto</option>
+    {productosDisponibles.map((producto) => (
+      <option key={producto.id} value={producto.id.toString()}>
+        {producto.nombre} (L. {producto.precio})
+      </option>
+    ))}
+  </Select>
+</FormGroup>
                 <FormGroup>
                   <Label>Cantidad</Label>
                   <Input
@@ -425,7 +557,7 @@ const Ventas: React.FC = () => {
                     <h4>Productos en la venta:</h4>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                       {formData.productosVenta.map((prod, idx) => (
-                        <li key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, background: '#faf8f2', borderRadius: 8, padding: '8px 12px' }}>
+                        <li key={prod.producto_id || idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, background: '#faf8f2', borderRadius: 8, padding: '8px 12px' }}>
                           <span>
                             {prod.nombre} - Cantidad: {prod.cantidad} - Precio: L. {prod.precio}
                           </span>
@@ -500,6 +632,7 @@ const Ventas: React.FC = () => {
       </MainContent>
     </VentasContainer>
   );
+  
 };
 
 export default Ventas; 

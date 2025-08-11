@@ -7,12 +7,33 @@ const Empleado = require('../modelos/Empleado');
 const obtenerUsuarios = [
   async (req, res) => {
     try {
+      // Traer todos los usuarios
       const usuarios = await Usuario.findAll({
         attributes: { exclude: ['contrasena'] },
+        raw: true
       });
-      res.json(usuarios);
+
+      // Traer todos los empleados y clientes para asociar sus ids
+      const Empleado = require('../modelos/Empleado');
+      const Cliente = require('../modelos/Cliente');
+      const empleados = await Empleado.findAll({ attributes: ['id', 'id_usuario'], raw: true });
+      const clientes = await Cliente.findAll({ attributes: ['id', 'usuario_id'], raw: true });
+
+      // Crear un mapa rápido de usuario_id -> id_empleado/id_cliente
+      const mapEmpleado = {};
+      empleados.forEach(e => { mapEmpleado[e.id_usuario] = e.id; });
+      const mapCliente = {};
+      clientes.forEach(c => { mapCliente[c.usuario_id] = c.id; });
+
+      // Agregar los ids correspondientes a cada usuario
+      const usuariosConIds = usuarios.map(u => ({
+        ...u,
+        id_empleado: mapEmpleado[u.id] || null,
+        id_cliente: mapCliente[u.id] || null
+      }));
+
+      res.json(usuariosConIds);
     } catch (error) {
-      //res.status(500).json({ mensaje: 'Error en el servidor', error });
       console.error('Error al crear usuario:', error);
       res.status(500).json({ mensaje: 'Error en el servidor', error: error.message });
     }
@@ -69,6 +90,25 @@ const actualizarUsuario = [
       if (contrasena) actualizaciones.contrasena = await argon2.hash(contrasena);
       if (rol) actualizaciones.rol = rol;
       await usuario.update(actualizaciones);
+
+      // --- ACTUALIZAR O CREAR REGISTRO EN EMPLEADOS SI EL ROL ES EMPLEADO ---
+      if (rol === 'empleado') {
+        const cargosPermitidos = ['cajero', 'vendedor', 'gerente', 'otro'];
+        let cargoEmpleado = req.body.cargo;
+        if (!cargosPermitidos.includes(cargoEmpleado)) {
+          cargoEmpleado = 'cajero';
+        }
+        const telefonoEmpleado = req.body.telefono || '00000000';
+        let empleado = await Empleado.findOne({ where: { id_usuario: usuario.id } });
+        if (empleado) {
+          // Actualizar datos de empleado
+          await empleado.update({ cargo: cargoEmpleado, telefono: telefonoEmpleado });
+        } else {
+          // Crear registro de empleado si no existe
+          await Empleado.create({ id_usuario: usuario.id, cargo: cargoEmpleado, telefono: telefonoEmpleado });
+        }
+      }
+
       res.json({ mensaje: 'Usuario actualizado', usuario: {
         id: usuario.id,
         primerNombre: usuario.primerNombre,
@@ -103,7 +143,11 @@ const eliminarUsuario = [
       await usuario.destroy();
       res.json({ mensaje: 'Usuario eliminado' });
     } catch (error) {
-      res.status(500).json({ mensaje: 'Error en el servidor', error });
+      let msg = 'Error en el servidor';
+      if (error && error.message) {
+        msg += ': ' + error.message;
+      }
+      res.status(500).json({ mensaje: msg });
     }
   },
 ];
@@ -120,18 +164,36 @@ const crearUsuario = async (req, res) => {
     const hash = await argon2.hash(contrasena);
     const nuevoUsuario = await Usuario.create({ primerNombre, segundoNombre, primerApellido, segundoApellido, genero, correo, contrasena: hash, rol });
 
-    // Enviar correo de bienvenida si el rol es empleado
-    try {
-      if (rol === 'empleado' || rol === 'vendedor' || rol === 'cajero' || rol === 'gerente') {
+    // Si el usuario es empleado, crear también el registro en empleados
+    let empleadoCreado = null;
+    if (rol === 'empleado' || rol === 'vendedor' || rol === 'cajero' || rol === 'gerente') {
+      const Empleado = require('../modelos/Empleado');
+      // Validar cargo permitido
+      const cargosPermitidos = ['cajero', 'vendedor', 'gerente', 'otro'];
+      let cargoEmpleado = req.body.cargo;
+      if (!cargosPermitidos.includes(cargoEmpleado)) {
+        cargoEmpleado = 'cajero';
+      }
+      const telefonoEmpleado = req.body.telefono || '00000000';
+      try {
+        empleadoCreado = await Empleado.create({
+          id_usuario: nuevoUsuario.id,
+          cargo: cargoEmpleado,
+          telefono: telefonoEmpleado
+        });
+      } catch (err) {
+        console.error('Error al crear registro de empleado:', err);
+      }
+      // Enviar correo de bienvenida
+      try {
         await enviarBienvenidaEmpleado({
           nombre: primerNombre,
           correo,
-          cargo: rol
+          cargo: cargoEmpleado
         });
+      } catch (err) {
+        console.error('Error al enviar correo de bienvenida:', err);
       }
-    } catch (err) {
-      console.error('Error al enviar correo de bienvenida:', err);
-      // No interrumpe la creación del usuario
     }
 
     res.status(201).json({
@@ -142,7 +204,8 @@ const crearUsuario = async (req, res) => {
       segundoApellido: nuevoUsuario.segundoApellido,
       genero: nuevoUsuario.genero,
       correo: nuevoUsuario.correo,
-      rol: nuevoUsuario.rol
+      rol: nuevoUsuario.rol,
+      empleado: empleadoCreado
     });
   } catch (error) {
     console.error('Error al crear usuario:', error); // Log detallado
