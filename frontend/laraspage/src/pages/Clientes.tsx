@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { clienteService } from '../services/api';
 import { Cliente } from '../types';
 import { 

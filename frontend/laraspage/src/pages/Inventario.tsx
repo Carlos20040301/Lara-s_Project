@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
+
 import { productoService, categoriaService } from '../services/api';
 import { Producto, Categoria } from '../types';
 import { 
@@ -18,6 +19,7 @@ import {
   TextArea, 
   LoadingMessage 
 } from '../components/ui/BaseComponents';
+import { useAuth } from '../context/AuthContext'; // <-- Añadido
 
 const InventarioContainer = styled.div`
   min-height: 100vh;
@@ -166,7 +168,8 @@ const Inventario: React.FC = () => {
   });
   const [editProductId, setEditProductId] = useState<number | null>(null);
 
-  // Depuración: mostrar categorías en consola
+  const { user } = useAuth(); // <-- Añadido
+
   useEffect(() => {
     console.log('CATEGORIAS EN EL FRONTEND:', categorias);
   }, [categorias]);
@@ -191,7 +194,6 @@ const Inventario: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Depuración: mostrar el estado antes de enviar
     console.log('formData antes de enviar:', formData);
     try {
       const formDataToSend = new FormData();
@@ -205,7 +207,6 @@ const Inventario: React.FC = () => {
         formDataToSend.append('imagen', formData.imagen);
       }
 
-      // Depuración: mostrar el contenido de FormData (compatible con ES5)
       formDataToSend.forEach((value, key) => {
         console.log('FormData:', key, value);
       });
@@ -233,15 +234,39 @@ const Inventario: React.FC = () => {
     }
   };
 
+  // Solo admin puede eliminar
   const handleDelete = async (id: number) => {
+    if (user?.rol !== 'admin') {
+      alert('Solo el usuario administrador puede eliminar productos.');
+      return;
+    }
     if (window.confirm('¿Estás seguro de que quieres marcar este producto como fuera de stock?')) {
       try {
         await productoService.delete(id);
-        await loadData(); // Recarga desde el backend
+        await loadData();
       } catch (error) {
         console.error('Error deleting product:', error);
       }
     }
+  };
+
+  // Solo admin puede editar
+  const handleEdit = (producto: Producto) => {
+    if (user?.rol !== 'admin') {
+      alert('Solo el usuario administrador puede editar productos.');
+      return;
+    }
+    setEditProductId(producto.id);
+    setFormData({
+      codigo: producto.codigo,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion || '',
+      precio: producto.precio.toString(),
+      stock: producto.stock.toString(),
+      categoria_id: producto.categoria_id.toString(),
+      imagen: null
+    });
+    setShowModal(true);
   };
 
   if (loading) {
@@ -259,9 +284,12 @@ const Inventario: React.FC = () => {
       <MainContent>
         <Header>
           <Title>Gestión de Inventario</Title>
-          <AddButton onClick={() => setShowModal(true)}>
-            + Agregar Producto
-          </AddButton>
+          {/* Solo el admin puede agregar productos */}
+          {user?.rol === 'admin' && (
+            <AddButton onClick={() => setShowModal(true)}>
+              + Agregar Producto
+            </AddButton>
+          )}
         </Header>
 
         <ProductsGrid>
@@ -284,35 +312,28 @@ const Inventario: React.FC = () => {
                   {isOutOfStock && <span style={{ color: 'red', fontWeight: 700, marginLeft: 8 }}>(Out of Stock)</span>}
                 </ProductStock>
                 <ProductActions>
-                  <ActionButton
-                    variant="edit"
-                    onClick={() => {
-                      setEditProductId(producto.id);
-                      setFormData({
-                        codigo: producto.codigo,
-                        nombre: producto.nombre,
-                        descripcion: producto.descripcion || '',
-                        precio: producto.precio.toString(),
-                        stock: producto.stock.toString(),
-                        categoria_id: producto.categoria_id.toString(),
-                        imagen: null
-                      });
-                      setShowModal(true);
-                    }}
-                  >
-                    Editar
-                  </ActionButton>
-                  {isOutOfStock ? (
-                    <ActionButton variant="delete" disabled style={{ background: '#aaa', cursor: 'not-allowed' }}>
-                      Out of Stock
-                    </ActionButton>
-                  ) : (
-                    <ActionButton
-                      variant="delete"
-                      onClick={() => handleDelete(producto.id)}
-                    >
-                      Marcar como Out of Stock
-                    </ActionButton>
+                  {/* Solo el admin puede ver los botones de editar y out of stock */}
+                  {user?.rol === 'admin' && (
+                    <>
+                      <ActionButton
+                        variant="edit"
+                        onClick={() => handleEdit(producto)}
+                      >
+                        Editar
+                      </ActionButton>
+                      {isOutOfStock ? (
+                        <ActionButton variant="delete" disabled style={{ background: '#aaa', cursor: 'not-allowed' }}>
+                          Out of Stock
+                        </ActionButton>
+                      ) : (
+                        <ActionButton
+                          variant="delete"
+                          onClick={() => handleDelete(producto.id)}
+                        >
+                          Marcar como Out of Stock
+                        </ActionButton>
+                      )}
+                    </>
                   )}
                 </ProductActions>
               </ProductCard>
@@ -426,4 +447,4 @@ const Inventario: React.FC = () => {
   );
 };
 
-export default Inventario; 
+export default Inventario;

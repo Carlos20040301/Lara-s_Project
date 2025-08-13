@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { authService } from '../services/api';
 import { Usuario } from '../types';
-import CrearUsuarioModal from '../components/CrearUsuarioModal';
+import CrearUsuarioModal from '../components/modals/CrearUsuarioModal';
 // Si tienes un modal de edición diferente, cámbialo aquí
 // import EditarUsuarioModal from '../components/EditarUsuarioModal';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 
 const Usuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { ventaService, clienteService, productoService } from '../services/api';
 import { Venta, Cliente, Producto } from '../types';
 import jsPDF from 'jspdf';
@@ -119,6 +119,25 @@ const Form = styled.form`
 
 const SubmitButton = styled(Button)`
   grid-column: 1 / -1;
+`;
+const ResumenDato = styled.p`
+  font-size: 1.15rem;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ResumenLabel = styled.span`
+  font-weight: 700;
+  color: #222;
+  min-width: 120px;
+`;
+
+const ResumenValor = styled.span`
+  color: #bfa14a;
+  font-weight: 700;
+  font-size: 1.2rem;
 `;
 
 const Ventas: React.FC = () => {
@@ -266,7 +285,12 @@ const Ventas: React.FC = () => {
     }
   };
 
+  // Solo admin puede eliminar
   const handleDelete = async (id: number) => {
+    if (user?.rol !== 'admin') {
+      alert('Solo el usuario administrador puede eliminar ventas.');
+      return;
+    }
     const venta = ventas.find(v => v.id === id);
     if (!venta) return;
     if (window.confirm('¿Estás seguro de que quieres eliminar esta venta?')) {
@@ -282,6 +306,15 @@ const Ventas: React.FC = () => {
         console.error('Error deleting sale:', error);
       }
     }
+  };
+
+  // Solo admin puede editar (si tienes función de editar)
+  const handleEdit = (venta: Venta) => {
+    if (user?.rol !== 'admin') {
+      alert('Solo el usuario administrador puede editar ventas.');
+      return;
+    }
+    // ...lógica para editar venta...
   };
 
   const calculateTotal = () => {
@@ -341,7 +374,7 @@ const Ventas: React.FC = () => {
     const promedio = totalVentas > 0 ? (ingresos / totalVentas) : 0;
 
     // Agrega resumen al PDF
-  doc.setFontSize(12);
+    doc.setFontSize(12);
 
     // Generar la tabla y obtener la posición final
     autoTable(doc, {
@@ -359,16 +392,18 @@ const Ventas: React.FC = () => {
     doc.save('ventas_recientes.pdf');
   };
 
-
   return (
     <VentasContainer>
       <Navbar />
       <MainContent>
         <Header>
           <Title>Caja Registradora</Title>
-          <AddButton onClick={() => setShowModal(true)}>
-            + Nueva Venta
-          </AddButton>
+          {/* Solo el admin puede agregar ventas manualmente */}
+          {user?.rol === 'admin' && (
+            <AddButton onClick={() => setShowModal(true)}>
+              + Nueva Venta
+            </AddButton>
+          )}
         </Header>
 
         <button onClick={descargarPDF} style={{marginBottom: 16, background: '#bfa14a', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer'}}>
@@ -388,6 +423,10 @@ const Ventas: React.FC = () => {
                   <TableHeaderCell>Teléfono Cliente</TableHeaderCell>
                   {user?.rol === 'admin' && (
                     <TableHeaderCell>Empleado</TableHeaderCell>
+                  )}
+                  {/* Solo admin puede ver columna de acciones */}
+                  {user?.rol === 'admin' && (
+                    <TableHeaderCell>Acciones</TableHeaderCell>
                   )}
                 </TableRow>
               </TableHeader>
@@ -417,9 +456,12 @@ const Ventas: React.FC = () => {
                               : (venta.empleado_id ? `ID: ${venta.empleado_id}` : 'No registrado'))}
                       </TableCell>
                     )}
-                    <TableCell>
-                      <Button style={{background:'#c00',color:'#fff',padding:'2px 10px',fontSize:14}} onClick={e => {e.stopPropagation(); handleDelete(venta.id);}}>Eliminar</Button>
-                    </TableCell>
+                    {/* Solo admin puede ver el botón de eliminar */}
+                    {user?.rol === 'admin' && (
+                      <TableCell>
+                        <Button style={{background:'#c00',color:'#fff',padding:'2px 10px',fontSize:14}} onClick={e => {e.stopPropagation(); handleDelete(venta.id);}}>Eliminar</Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </tbody>
@@ -460,14 +502,40 @@ const Ventas: React.FC = () => {
             )}
           </SalesCard>
 
-          <SalesCard>
-            <CardTitle>Resumen del Día</CardTitle>
-            <div style={{ fontSize: '18px', lineHeight: '2' }}>
-              <p><strong>Total Ventas:</strong> {ventas.length}</p>
-              <p><strong>Ingresos:</strong> L. {(Number(ventas.reduce((sum, venta) => sum + Number(venta.total || 0), 0)) || 0).toFixed(2)}</p>
-              <p><strong>Promedio:</strong> L. {ventas.length > 0 ? (Number(ventas.reduce((sum, venta) => sum + Number(venta.total || 0), 0)) / ventas.length).toFixed(2) : '0.00'}</p>
-            </div>
-          </SalesCard>
+          <SalesCard>  
+            <CardTitle>Resumen de Ventas</CardTitle>
+              <div style={{
+    fontSize: '18px',
+    lineHeight: '2',
+    background: 'linear-gradient(120deg, #fffbe6 60%, #f7f7fa 100%)',
+    borderRadius: '18px',
+    boxShadow: '0 4px 18px rgba(191, 161, 74, 0.10)',
+    padding: '28px 22px',
+    margin: '0 auto',
+    color: '#2d2d2d',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    fontFamily: "'Segoe UI', 'Arial', sans-serif"
+  }}>
+     <ResumenDato>
+      <ResumenLabel>Total Ventas:</ResumenLabel>
+      <ResumenValor>{ventas.length}</ResumenValor>
+    </ResumenDato>
+    <ResumenDato>
+      <ResumenLabel>Ingresos:</ResumenLabel>
+      <ResumenValor>
+        L. {(Number(ventas.reduce((sum, venta) => sum + Number(venta.total || 0), 0)) || 0).toFixed(2)}
+      </ResumenValor>
+    </ResumenDato>
+    <ResumenDato>
+      <ResumenLabel>Promedio:</ResumenLabel>
+      <ResumenValor>
+        L. {ventas.length > 0 ? (Number(ventas.reduce((sum, venta) => sum + Number(venta.total || 0), 0)) / ventas.length).toFixed(2) : '0.00'}
+      </ResumenValor>
+    </ResumenDato>
+  </div>
+</SalesCard>
         </SalesGrid>
 
         {showModal && (
@@ -482,29 +550,29 @@ const Ventas: React.FC = () => {
                   <span style={{color:'#007bff'}}>{user?.nombre ? user.nombre : 'No identificado'}</span>
                 </div>
                 <FormGroup>
-  <Label>Cliente</Label>
-  <Select
-    value={formData.clienteId}
-    onChange={e => {
-      const cliente = clientes.find(c => c.id.toString() === e.target.value);
-      setFormData({
-        ...formData,
-        clienteId: cliente ? cliente.id.toString() : '',
-        cliente_nombre: cliente ? `${cliente.primerNombre} ${cliente.primerApellido}` : '',
-        cliente_email: cliente?.email || '',
-        cliente_telefono: cliente?.telefono || ''
-      });
-    }}
-    required
-  >
-    <option value="">Seleccionar cliente</option>
-    {clientes.map((cliente) => (
-      <option key={cliente.id} value={cliente.id.toString()}>
-        {`${cliente.primerNombre} ${cliente.primerApellido}`}
-      </option>
-    ))}
-  </Select>
-</FormGroup>
+                  <Label>Cliente</Label>
+                  <Select
+                    value={formData.clienteId}
+                    onChange={e => {
+                      const cliente = clientes.find(c => c.id.toString() === e.target.value);
+                      setFormData({
+                        ...formData,
+                        clienteId: cliente ? cliente.id.toString() : '',
+                        cliente_nombre: cliente ? `${cliente.primerNombre} ${cliente.primerApellido}` : '',
+                        cliente_email: cliente?.email || '',
+                        cliente_telefono: cliente?.telefono || ''
+                      });
+                    }}
+                    required
+                  >
+                    <option value="">Seleccionar cliente</option>
+                    {clientes.map((cliente) => (
+                      <option key={cliente.id} value={cliente.id.toString()}>
+                        {`${cliente.primerNombre} ${cliente.primerApellido}`}
+                      </option>
+                    ))}
+                  </Select>
+                </FormGroup>
 
                 <FormGroup>
                   <Label>Email del Cliente</Label>
@@ -527,19 +595,19 @@ const Ventas: React.FC = () => {
                 </FormGroup>
 
                 <FormGroup>
-  <Label>Producto</Label>
-  <Select
-    value={formData.productoSeleccionado}
-    onChange={e => setFormData({ ...formData, productoSeleccionado: e.target.value })}
-  >
-    <option value="">Seleccionar producto</option>
-    {productosDisponibles.map((producto) => (
-      <option key={producto.id} value={producto.id.toString()}>
-        {producto.nombre} (L. {producto.precio})
-      </option>
-    ))}
-  </Select>
-</FormGroup>
+                  <Label>Producto</Label>
+                  <Select
+                    value={formData.productoSeleccionado}
+                    onChange={e => setFormData({ ...formData, productoSeleccionado: e.target.value })}
+                  >
+                    <option value="">Seleccionar producto</option>
+                    {productosDisponibles.map((producto) => (
+                      <option key={producto.id} value={producto.id.toString()}>
+                        {producto.nombre} (L. {producto.precio})
+                      </option>
+                    ))}
+                  </Select>
+                </FormGroup>
                 <FormGroup>
                   <Label>Cantidad</Label>
                   <Input
@@ -632,7 +700,6 @@ const Ventas: React.FC = () => {
       </MainContent>
     </VentasContainer>
   );
-  
-};
+}
 
-export default Ventas; 
+export default Ventas;
